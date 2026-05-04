@@ -1,0 +1,127 @@
+\providecommand{\oritoneexamplemode}{white}
+\documentclass[\oritoneexamplemode]{oritone-cv}
+
+\name{Ada}
+\surname{Sterling}
+
+\shortinfo{%
+  \maillink{ada.sterling@example.com}%
+  \sep%
+  \phonelink{+1 555 0100}%
+  \sep%
+  \weblink{\faGlobe}{adasterling.dev}{adasterling.dev}%
+  \sep%
+  \weblink{\faGithub}{asterling}{github.com/asterling}%
+  \sep%
+  \weblink{\faLinkedin}{ada-sterling}{linkedin.com/in/ada-sterling}%
+  \sep%
+  \lastupdated%
+}
+
+\phrase{I build \highlighted{reliable software systems} for scientific
+computing, data platforms, and research engineering teams.}
+
+\begin{document}
+\cvhead
+
+\cvsection{Profile}
+\cventry{Engineering Focus}{%
+  Research software engineer with experience turning exploratory numerical
+  methods into maintainable tools, reproducible pipelines, and production
+  services. Comfortable owning the full path from mathematical model and data
+  interface to release process, documentation, and operational metrics.
+}
+\cvcustomentry{Current Interests}{remote or Berlin}{%
+  Differentiable simulation, robust data products for laboratory workflows,
+  typed APIs for scientific code, and developer tooling that makes complex
+  methods easier to verify.
+}
+
+\cvsection{Experience}
+\cvdatedentry{Northbridge Labs, Senior Software Engineer}{2022--Present}{%
+  Led a small team building data services for multi-site experiments. Designed
+  ingestion contracts, versioned storage layouts, and validation reports that
+  reduced failed analysis runs by 38 percent. Introduced trace-based debugging
+  for long-running workflows and wrote review checklists for numerical
+  correctness, privacy boundaries, and deployment readiness.
+}
+\cvdatedentry{Northbridge Labs, Software Engineer}{2020--2022}{%
+  Built the first shared workflow service for simulation batches and instrument
+  data. Replaced hand-maintained scripts with tested Python and Julia packages,
+  moved execution metadata into a queryable schema, and documented the release
+  process for scientists who needed repeatable results without becoming
+  infrastructure specialists. \inlinelink{case note}{example.com/workflows}
+}
+\cvdatedentry{Example Institute, Research Engineer}{2018--2020}{%
+  Developed finite-element prototypes for coupled transport problems and
+  maintained the data preparation pipeline for two field studies. Collaborated
+  with researchers on experiment design, parameter studies, and publication
+  figures while keeping the code base usable by incoming graduate students.
+}
+\cvdatedentry{Sample Analytics, Data Engineering Intern}{2017}{%
+  Implemented quality checks for daily data deliveries, wrote compact status
+  dashboards, and documented operational failure modes. The internship produced
+  the first reusable test fixtures for the team's ETL code.
+}
+
+\cvsection{Selected Projects}
+\cvdatedentryshort{Open Simulation Registry}{2024}{%
+  Designed a schema and command-line interface for tracking parameter sweeps,
+  artifacts, and result provenance across local workstations and shared
+  clusters.
+}
+\cvdatedentryshort{Typed Laboratory API}{2023}{%
+  Created a small Rust service with Python bindings for normalizing instrument
+  events before they enter downstream notebooks and dashboards.
+}
+\cvdatedentryshort{Mesh Diagnostics Toolkit}{2021}{%
+  Built geometry checks, visual summaries, and automated report generation for
+  several mesh families used in teaching and project proposals.
+}
+
+\cvsection{Education}
+\cvdatedentry{M.Sc. in Computer Science, Example University}{2016--2018}{%
+  Thesis on fault-tolerant workflow systems for large-scale simulation.
+  Coursework included numerical optimization, distributed systems, scientific
+  visualization, and statistical learning.
+}
+\cvdatedentry{B.Sc. in Applied Mathematics, Sample College}{2012--2016}{%
+  Graduated with distinction. Capstone project on adaptive quadrature for
+  parameterized integral equations.
+}
+
+\cvsection{Publications and Talks}
+\cvdatedentryshort{Reproducible Simulation Pipelines for Field Studies}{2025}{%
+  Invited talk, Research Software Practice Forum.
+}
+\cvdatedentryshort{A Practical Contract for Scientific Data Products}{2024}{%
+  Workshop paper with Benoit Sample and Clara Rivera.
+}
+\cvdatedentryshort{Workflow Observability in Numerical Laboratories}{2022}{%
+  Internal technical report adopted as the review template for two platform
+  teams.
+}
+
+\cvsection{Teaching and Service}
+\cvdatedentryshort{Software Carpentry Instructor}{2021--Present}{%
+  Teaches short courses on testing, version control, packaging, and
+  reproducible analysis for mixed scientific audiences.
+}
+\cvdatedentryshort{Mentor, Research Engineering Fellowship}{2020--2024}{%
+  Mentored five fellows on project scoping, code review, documentation, and
+  turning prototypes into reusable packages.
+}
+
+\cvsection{Skills}
+\cventry{Programming}{Julia\sep Python\sep Rust\sep SQL\sep Bash\sep R}
+\cventry{Scientific Computing}{Finite elements\sep Optimization\sep
+  Simulation workflows\sep Data validation\sep Reproducibility}
+\cventry{Systems}{PostgreSQL\sep Linux\sep GitHub Actions\sep Containers\sep
+  Observability\sep API design}
+\cventry{Communication}{Technical writing\sep Research collaboration\sep
+  Code review\sep Mentoring\sep Workshop teaching}
+
+\cvsection{Languages}
+\cventry{Working Languages}{English, German, and French}
+
+\end{document}

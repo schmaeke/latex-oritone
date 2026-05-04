@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  l3build:
+    name: l3build check and docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run l3build
+        uses: xu-cheng/texlive-action@v2
+        with:
+          scheme: full
+          run: |
+            l3build check
+            l3build doc

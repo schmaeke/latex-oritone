@@ -1,0 +1,232 @@
+\providecommand{\oritoneexamplemode}{white}
+\documentclass[\oritoneexamplemode,11pt]{oritone-manuscript}
+
+\title{A Complete Manuscript Example for Reusable Scientific Reports}
+\author[1]{Ada Example}
+\author[1,2]{Benoit Sample}
+\author[2]{Clara Rivera}
+\affil[1]{Department of Applied Typesetting, Example University}
+\affil[2]{Institute for Reusable Documents, Sample Laboratory}
+\date{\today}
+
+\printcompileinfo
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document demonstrates the manuscript class on content that resembles a
+short technical paper rather than a minimal smoke test. It includes authors and
+affiliations, keywords, line numbers, compact headings, mathematical notation,
+figures, tables, listings, cross-references, links, captions, and enough body
+text to show running heads and filled pages.
+\end{abstract}
+
+\keywords{document classes\keywordsep scientific manuscripts\keywordsep reusable LaTeX\keywordsep
+research software}
+
+\modulolinenumbers[5]
+\linenumbers
+
+\section{Introduction}
+\label{sec:introduction}
+
+Reusable manuscript infrastructure matters when research groups write many
+short reports with similar typographic expectations. A compact class should
+therefore provide the routine decisions once: page geometry, line spacing,
+author formatting, captions, references, links, listings, and running heads. It
+should also stay quiet enough that authors can focus on structure and argument
+instead of presentation.
+
+The example is intentionally filled with ordinary paragraphs. The first page
+shows the title block, abstract, keyword line, and the beginning of the paper.
+Subsequent pages show how headings sit next to dense prose, floats, numbered
+equations, and code. Cross-references such as \Cref{sec:methods} and
+\Cref{fig:workflow} use the class defaults, while links such as
+\href{https://example.com/protocol}{the project protocol} use the configured
+semantic link colors.
+
+\subsection{Design requirements}
+
+The class is aimed at review drafts, internal reports, preprints, and small
+technical notes. Those documents often need generous line spacing, visible page
+state, line numbers, and compact headings. They also need predictable behavior
+for standard floats. The typography should be restrained: manuscript pages
+usually benefit from clear hierarchy, not elaborate decoration.
+
+\begin{oritonenote}[Design Note]
+The note environment uses the selected accent role. It is useful for review
+comments, assumptions, or short implementation context that belongs with the
+body text but should remain visually scannable.
+\end{oritonenote}
+
+\subsubsection{Scope}
+
+The class does not own the scientific content. It owns the repeated
+presentation layer. Authors remain free to choose theorem packages,
+bibliography tools, discipline-specific notation, and journal-specific final
+formatting when a manuscript leaves the internal review stage.
+
+\paragraph{Implementation note}
+The run-in paragraph heading demonstrates the fourth heading level and keeps a
+short note attached to the first sentence. The following sections use longer
+blocks of prose so that page headers, footers, captions, and line numbering are
+visible in the compiled output.
+
+\section{Methods}
+\label{sec:methods}
+
+Consider a scalar state \(u:\Omega\to\mathbb{R}\) and an observation operator
+\(G\). A compact loss used for calibration can be written as
+\begin{equation}
+  \mathcal{J}(u,\theta)
+  =
+  \frac{1}{2}\lVert G(u)-y\rVert_{\Gamma^{-1}}^2
+  + \lambda \int_{\Omega}
+      \frac{1}{2}\lvert\nabla u\rvert^2 + V(u,\theta)\,\mathrm{d}x .
+  \label{eq:objective}
+\end{equation}
+The notation in \Cref{eq:objective} is deliberately conventional. The point of
+the example is to show equation spacing and numbering in context, not to define
+a new model. In real reports the same space is commonly used for short
+derivations, objective functions, balance laws, or estimator definitions.
+
+\begin{figure}[tbp]
+  \centering
+  \begin{tikzpicture}[
+    node distance=2.45cm,
+    every node/.style={
+      draw=darkblue,
+      fill=verylightblue,
+      rounded corners=2pt,
+      align=center,
+      minimum width=2.35cm,
+      minimum height=0.9cm
+    },
+    arrow/.style={->, thick, draw=darkgreen}
+  ]
+    \node (model) {Model};
+    \node[right of=model] (solve) {Solve};
+    \node[right of=solve] (check) {Check};
+    \node[below of=solve, yshift=9mm] (archive) {Archive};
+    \draw[arrow] (model) -- (solve);
+    \draw[arrow] (solve) -- (check);
+    \draw[arrow] (check) |- (archive);
+    \draw[arrow] (archive) -| (model);
+  \end{tikzpicture}
+  \caption{A workflow figure using semantic colors from the shared palette.}
+  \label{fig:workflow}
+\end{figure}
+
+The workflow in \Cref{fig:workflow} is deliberately small, but it exercises the
+same caption and color behavior as a larger diagram. In practice the model step
+records assumptions and parameter bounds, the solve step executes the numerical
+kernel, the check step compares diagnostics against tolerances, and the archive
+step stores artifacts with enough metadata for later review.
+
+\begin{oritoneexample}[Accepted Pattern]
+Use example callouts for validated conventions, reproducible protocol snippets,
+or short observations that should read as positive guidance rather than a
+warning.
+\end{oritoneexample}
+
+\subsection{Quality measures}
+
+The numerical summary in \Cref{tab:summary} uses a plain table so that the class
+does not depend on a specialized table package. The columns report the size of a
+small refinement study and a pair of quality measures. Dense manuscript tables
+should remain readable without heavy rules or background color.
+
+\begin{table}[tbp]
+  \centering
+  \caption{A compact numerical summary used throughout the example.}
+  \label{tab:summary}
+  \begin{tabular}{lrrr}
+    \hline
+    Case & Iterations & Relative error & Wall time (s) \\
+    \hline
+    Coarse & 18 & \(2.4\times10^{-2}\) & 0.8 \\
+    Medium & 27 & \(6.1\times10^{-3}\) & 2.7 \\
+    Fine & 41 & \(1.5\times10^{-3}\) & 9.4 \\
+    Validation & 39 & \(1.8\times10^{-3}\) & 8.9 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\section{Implementation}
+\label{sec:implementation}
+
+Listings use the same framed component as the other Oritone document classes:
+line numbers, semantic syntax color, and compact monospaced text.
+\Cref{lst:quality} shows a small Python-like diagnostic routine. The code is
+intentionally short, but it still demonstrates keywords, strings, comments,
+numbers, and continuation lines.
+
+\begin{lstlisting}[language=Python, caption={A short quality-control routine.}, label={lst:quality}]
+def residual(values, tolerance=1.0e-8):
+    """Return a normalized second-difference residual."""
+    total = 0.0
+    count = 0
+    for left, center, right in zip(values[:-2], values[1:-1], values[2:]):
+        total += abs(left - 2.0 * center + right)
+        count += 1
+    return total / max(count, 1) < tolerance
+\end{lstlisting}
+
+The surrounding text should look like a normal manuscript rather than a boxed
+demo. A reader can scan from \Cref{eq:objective} to \Cref{fig:workflow},
+\Cref{tab:summary}, and \Cref{lst:quality} without encountering a change in
+visual language. That consistency is the primary purpose of the class.
+
+\section{Results}
+\label{sec:results}
+
+The method was evaluated on four manufactured cases. The first two cases were
+small enough to inspect by hand, while the remaining cases were used to check
+the stability of the workflow and the visual density of full pages. The
+relative errors in \Cref{tab:summary} decrease at the expected rate, and the
+wall time grows smoothly with refinement.
+
+Longer paragraphs are included here to exercise page filling. A typical report
+contains limitations, exceptions, and small interpretation details that do not
+belong in the figure captions. The class should make those paragraphs easy to
+read: no decorative sidebars, no oversized headings, and no excessive color in
+body text. The Oritone palette remains visible in links, figures, and listings
+without competing with the manuscript itself.
+
+\subsection{Robustness checks}
+
+We repeated the workflow with perturbed initial conditions and with a coarser
+archive cadence. The diagnostic routine continued to reject incomplete runs,
+and the stored metadata was sufficient to reproduce all accepted cases. The
+main operational issue was not numerical stability but naming discipline:
+reports were easiest to review when parameter files, generated figures, and
+tables used the same case identifiers.
+
+\begin{oritonewarning}[Review Caveat]
+Warning callouts use the danger role and should stay rare. They are intended for
+failed checks, unresolved assumptions, or required reader action.
+\end{oritonewarning}
+
+\section{Discussion}
+\label{sec:discussion}
+
+The example demonstrates the class features in one compileable source file.
+Authors can remove line numbers for final preprints, omit compile information
+from the footer, add bibliography packages, or replace the toy model with a real
+study. The visual defaults are intentionally conservative so that such changes
+do not require rewriting the document.
+
+The most useful test for a document class is a filled page. Sparse examples can
+hide bad heading spacing, fragile floats, overbearing colors, and awkward footer
+placement. This source therefore includes enough ordinary text to make those
+interactions visible during development.
+
+\section{Conclusion}
+
+The manuscript class provides a compact, review-friendly surface for scientific
+reports. It demonstrates predictable defaults for typography, captions, links,
+line numbers, listings, equations, tables, and figures while leaving
+discipline-specific packages to the document author.
+
+\end{document}

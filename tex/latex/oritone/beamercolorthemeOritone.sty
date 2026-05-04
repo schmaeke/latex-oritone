@@ -1,0 +1,99 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{beamercolorthemeOritone}[2026/05/04 v0.1.0 Oritone Beamer color theme]
+
+% Beamer color role mapping. This file applies the shared Oritone palette to
+% Beamer's named color slots and creates a few theme-specific accent aliases
+% used by the inner and outer templates.
+
+\RequirePackage{oritonebeameroptions}
+\RequirePackage{oritone}
+\RequirePackage{hyperref}
+
+% Process the same mode/accent options as the top-level theme, then install
+% semantic Oritone colors for the selected mode.
+\oritonebeamer@declareoptions
+\ProcessOptionsBeamer
+\oritonesetup{mode=\oritonebeamer@mode,accent=\oritonebeamer@accent}
+
+% Snapshot the active accent roles under Beamer-specific names. Beamer templates
+% use these aliases so they remain stable if a document later changes `accent`.
+\colorlet{oritoneaccent}{accent}
+\colorlet{oritoneaccentverylight}{accent-verylight}
+\colorlet{oritoneaccentlight}{accent-light}
+\colorlet{oritoneaccentdark}{accent-dark}
+\colorlet{oritoneaccentverydark}{accent-verydark}
+
+% Footer contrast differs on dark/black modes because those modes already use a
+% dark page background. This flag controls the footline/progressbar roles below.
+\def\oritonebeamer@darkmode{dark}
+\def\oritonebeamer@blackmode{black}
+\newif\iforitonebeamer@darksurface
+\ifx\oritonebeamer@mode\oritonebeamer@darkmode
+  \oritonebeamer@darksurfacetrue
+\fi
+\ifx\oritonebeamer@mode\oritonebeamer@blackmode
+  \oritonebeamer@darksurfacetrue
+\fi
+
+% Global text and structural roles.
+\setbeamercolor*{normal text}{bg=background, fg=foreground}
+\setbeamercolor*{inverted text}{bg=foreground, fg=background}
+\setbeamercolor*{background canvas}{bg=background}
+\setbeamercolor*{structure}{fg=oritoneaccentdark}
+\setbeamercolor*{alerted text}{fg=danger}
+
+% Title page roles.
+\setbeamercolor*{title}{bg=background, fg=text-strong}
+\setbeamercolor*{subtitle}{fg=text-subtle}
+\setbeamercolor*{date}{fg=oritoneaccent}
+\setbeamercolor*{author}{fg=text-strong}
+\setbeamercolor*{institute}{fg=text-subtle}
+\setbeamercolor*{title page accent}{fg=oritoneaccent}
+\setbeamercolor*{title page logo warning}{bg=danger, fg=background}
+
+% Frame-title, section-frame, and closing-frame roles.
+\setbeamercolor*{framesection}{bg=background, fg=oritoneaccentverydark}
+\setbeamercolor*{frametitle}{bg=background, fg=oritoneaccent}
+\setbeamercolor*{sectionframetitle}{fg=oritoneaccentverydark}
+\setbeamercolor*{sectionframesubtitle}{fg=oritoneaccentdark}
+\setbeamercolor*{closing title}{fg=oritoneaccentverydark}
+
+% Navigation and table-of-contents roles.
+\setbeamercolor*{section in head/foot}{fg=oritoneaccentverydark}
+\setbeamercolor*{section in toc}{fg=foreground}
+\setbeamercolor*{section in toc shaded}{fg=text-muted}
+
+% Footer and progress bar. Light/white modes invert the footer for stronger
+% separation; dark/black modes keep the footer on the page background.
+\iforitonebeamer@darksurface
+  \setbeamercolor*{footline}{fg=foreground, bg=background}
+  \setbeamercolor*{progressbar}{fg=oritoneaccentdark, bg=oritoneaccentdark!25!background}
+\else
+  \setbeamercolor*{footline}{fg=background, bg=oritoneaccentverydark}
+  \setbeamercolor*{progressbar}{fg=oritoneaccentlight, bg=oritoneaccentlight!25!background}
+\fi
+
+% Block roles mirror the document callout colors: accent for normal blocks,
+% success for examples, and danger for alerts.
+\setbeamercolor*{block title}{bg=oritoneaccent!12!background, fg=oritoneaccentdark}
+\setbeamercolor*{block body}{bg=oritoneaccent!12!background, fg=foreground}
+\setbeamercolor*{block title example}{bg=success!12!background, fg=darkgreen}
+\setbeamercolor*{block body example}{bg=success!12!background, fg=foreground}
+\setbeamercolor*{block title alerted}{bg=danger!12!background, fg=darkred}
+\setbeamercolor*{block body alerted}{bg=danger!12!background, fg=foreground}
+
+% Bibliography roles.
+\setbeamercolor{bibliography item}{fg=oritoneaccentdark}
+\setbeamercolor{bibliography entry author}{fg=oritoneaccentverydark}
+\setbeamercolor{bibliography entry title}{fg=foreground}
+\setbeamercolor{bibliography entry location}{fg=foreground}
+\setbeamercolor{bibliography entry note}{fg=text-muted}
+
+% Keep all Beamer hyperlinks inside the active accent color family.
+\hypersetup{
+  colorlinks=true,
+  allcolors=oritoneaccent,
+}
+
+\endinput

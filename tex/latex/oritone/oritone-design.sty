@@ -1,0 +1,318 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{oritone-design}[2026/05/04 v0.1.0 Shared Oritone document design roles]
+
+% This package contains design primitives that are shared by the document
+% classes and the Beamer theme. It assumes `oritone` has already installed the
+% semantic color roles, then adds reusable spacing constants, font role helpers,
+% localized labels, title rules, semantic link setup, and callout environments.
+
+\RequirePackage{oritone}
+
+% Shared measurements. Classes should use these names instead of hard-coded
+% rule widths or callout padding so changes remain consistent across CV,
+% manuscript, thesis, and Beamer surfaces.
+\newlength{\oritonerulewidth}
+\newlength{\oritoneaccentbarwidth}
+\newlength{\oritoneblockrulewidth}
+\newlength{\oritoneblockxsep}
+\newlength{\oritoneblockysep}
+\newlength{\oritonetitlerulegap}
+\newlength{\oritonetitlerulelowercorrection}
+\setlength{\oritonerulewidth}{0.25mm}
+\setlength{\oritoneaccentbarwidth}{1.4mm}
+\setlength{\oritoneblockrulewidth}{0.65mm}
+\setlength{\oritoneblockxsep}{2.5mm}
+\setlength{\oritoneblockysep}{1.5mm}
+\setlength{\oritonetitlerulegap}{2mm}
+\setlength{\oritonetitlerulelowercorrection}{2mm}
+
+% Font role switches. `oritone-fonts` chooses the actual families; these helpers
+% describe where the classes use body, display, and mono typography.
+\newcommand*\oritoneUseSerifAsDefault{%
+  \renewcommand*\familydefault{\rmdefault}%
+  \normalfont
+}
+\newcommand*\oritoneUseSansAsDefault{%
+  \renewcommand*\familydefault{\sfdefault}%
+  \normalfont
+}
+\newcommand*\oritoneDisplayFont{\sffamily}
+\newcommand*\oritoneBodyFont{\rmfamily}
+\newcommand*\oritoneMonoFont{\ttfamily}
+
+% Shared ruled title block for thesis and manuscript title pages. The title is
+% measured in a box with a fixed phantom height so the gap to the upper/lower
+% rules stays stable even when the title contains descenders.
+\newsavebox{\oritone@ruledtitlebox}
+\newcommand*\oritoneRuledTitle[1]{%
+  \par
+  \begingroup
+    \linespread{1.0}\selectfont
+    \setbox\oritone@ruledtitlebox=\vbox{%
+      \hsize=\linewidth
+      \topskip=0pt
+      \centering
+      \oritoneDisplayFont\Huge\bfseries\color{headings}%
+      \vphantom{Agjp}#1\vphantom{Agjp}\par
+    }%
+    \vbox{%
+      \hsize=\linewidth
+      {\color{accent}\hrule width \hsize height \oritoneaccentbarwidth\relax}%
+      \vskip \oritonetitlerulegap
+      \nointerlineskip
+      \box\oritone@ruledtitlebox
+      \vskip \dimexpr\oritonetitlerulegap+\oritonetitlerulelowercorrection\relax
+      \nointerlineskip
+      {\color{accent}\hrule width \hsize height \dimexpr2\oritonerulewidth\relax}%
+    }%
+  \endgroup
+  \par
+}
+
+% Small inline separators and page-number text helpers used by multiple
+% classes. Color variants preserve the same glyph and spacing.
+\newcommand*\oritonesectionseparator{\enspace\textbullet\enspace}
+\newcommand*\oritonemutedseparator{\textcolor{text-muted}{\oritonesectionseparator}}
+\newcommand*\oritoneaccentseparator{\textcolor{accent}{\oritonesectionseparator}}
+\newcommand*\oritonepagenumbertext[3]{#1\ \textbf{#2}\ #3}
+
+% Label registry. Each label has a key and language; aliases point one language
+% at another. The lookup falls back to English, then finally the raw key.
+\long\def\oritoneDeclareLabel#1#2#3{%
+  \@namedef{oritone@label@#1@#2}{#3}%
+}
+\newcommand*\oritoneAliasLabel[3]{%
+  \@namedef{oritone@label@#1@#2}{\csname oritone@label@#1@#3\endcsname}%
+}
+\newcommand*\oritonelabel[2]{%
+  \ifcsname oritone@label@#1@#2\endcsname
+    \csname oritone@label@#1@#2\endcsname
+  \else
+    \ifcsname oritone@label@#1@english\endcsname
+      \csname oritone@label@#1@english\endcsname
+    \else
+      #1%
+    \fi
+  \fi
+}
+% Resolve a label against the current babel language when babel is available.
+% Only languages used by the document classes are checked here; other language
+% labels remain available through explicit \oritonelabel calls.
+\newcommand*\oritonecurrentlabel[1]{%
+  \@ifundefined{iflanguage}{%
+    \oritonelabel{#1}{english}%
+  }{%
+    \iflanguage{ngerman}{%
+      \oritonelabel{#1}{ngerman}%
+    }{%
+      \iflanguage{german}{%
+        \oritonelabel{#1}{german}%
+      }{%
+        \oritonelabel{#1}{english}%
+      }%
+    }%
+  }%
+}
+
+% English labels. The thesis and manuscript classes rely on these for PDF
+% metadata, front matter, footers, and headings.
+\oritoneDeclareLabel{page}{english}{Page}
+\oritoneDeclareLabel{of}{english}{of}
+\oritoneDeclareLabel{updated}{english}{Updated on}
+\oritoneDeclareLabel{compiled}{english}{Doc. compiled on}
+\oritoneDeclareLabel{at}{english}{at}
+\oritoneDeclareLabel{section}{english}{Section}
+\oritoneDeclareLabel{abstract}{english}{Abstract}
+\oritoneDeclareLabel{keywords}{english}{Keywords}
+\oritoneDeclareLabel{declaration}{english}{Declaration of Academic Integrity}
+\oritoneDeclareLabel{declaration-text}{english}{I declare that I prepared this thesis independently and used only the sources and aids indicated in the text.}
+\oritoneDeclareLabel{digital-identical}{english}{The submitted digital version is identical to the printed version.}
+\oritoneDeclareLabel{place-date}{english}{Place, date}
+\oritoneDeclareLabel{signature}{english}{Signature}
+\oritoneDeclareLabel{first-examiner}{english}{First Examiner}
+\oritoneDeclareLabel{second-examiner}{english}{Second Examiner}
+\oritoneDeclareLabel{date}{english}{Date}
+\oritoneDeclareLabel{degree-sentence}{english}{Submitted in satisfaction of the requirements for the degree of}
+\oritoneDeclareLabel{by}{english}{by}
+\oritoneDeclareLabel{on}{english}{on}
+
+% English regional variants currently share the same strings.
+\oritoneAliasLabel{page}{american}{english}
+\oritoneAliasLabel{of}{american}{english}
+\oritoneAliasLabel{updated}{american}{english}
+\oritoneAliasLabel{page}{british}{english}
+\oritoneAliasLabel{of}{british}{english}
+\oritoneAliasLabel{updated}{british}{english}
+
+% German labels use ASCII transliterations to keep the package source portable
+% across older TeX toolchains and editors.
+\oritoneDeclareLabel{page}{german}{Seite}
+\oritoneDeclareLabel{of}{german}{von}
+\oritoneDeclareLabel{updated}{german}{Zuletzt geaendert am}
+\oritoneDeclareLabel{compiled}{german}{Dok. kompiliert am}
+\oritoneDeclareLabel{at}{german}{um}
+\oritoneDeclareLabel{section}{german}{Abschnitt}
+\oritoneDeclareLabel{abstract}{german}{Kurzfassung}
+\oritoneDeclareLabel{keywords}{german}{Schluesselwoerter}
+\oritoneDeclareLabel{declaration}{german}{Eidesstattliche Erklaerung}
+\oritoneDeclareLabel{declaration-text}{german}{Ich versichere, dass ich die vorliegende Arbeit selbststaendig verfasst und keine anderen als die angegebenen Quellen und Hilfsmittel benutzt habe.}
+\oritoneDeclareLabel{digital-identical}{german}{Die elektronische Fassung stimmt mit der gedruckten Fassung ueberein.}
+\oritoneDeclareLabel{place-date}{german}{Ort, Datum}
+\oritoneDeclareLabel{signature}{german}{Unterschrift}
+\oritoneDeclareLabel{first-examiner}{german}{Erstpruefer}
+\oritoneDeclareLabel{second-examiner}{german}{Zweitpruefer}
+\oritoneDeclareLabel{date}{german}{Datum}
+\oritoneDeclareLabel{degree-sentence}{german}{Zur Erlangung des akademischen Grades}
+\oritoneDeclareLabel{by}{german}{Vorgelegt von}
+\oritoneDeclareLabel{on}{german}{am}
+\oritoneAliasLabel{page}{ngerman}{german}
+\oritoneAliasLabel{of}{ngerman}{german}
+\oritoneAliasLabel{updated}{ngerman}{german}
+\oritoneAliasLabel{compiled}{ngerman}{german}
+\oritoneAliasLabel{at}{ngerman}{german}
+\oritoneAliasLabel{section}{ngerman}{german}
+\oritoneAliasLabel{abstract}{ngerman}{german}
+\oritoneAliasLabel{keywords}{ngerman}{german}
+\oritoneAliasLabel{declaration}{ngerman}{german}
+\oritoneAliasLabel{declaration-text}{ngerman}{german}
+\oritoneAliasLabel{digital-identical}{ngerman}{german}
+\oritoneAliasLabel{place-date}{ngerman}{german}
+\oritoneAliasLabel{signature}{ngerman}{german}
+\oritoneAliasLabel{first-examiner}{ngerman}{german}
+\oritoneAliasLabel{second-examiner}{ngerman}{german}
+\oritoneAliasLabel{date}{ngerman}{german}
+\oritoneAliasLabel{degree-sentence}{ngerman}{german}
+\oritoneAliasLabel{by}{ngerman}{german}
+\oritoneAliasLabel{on}{ngerman}{german}
+
+% Extra labels used mainly by the CV class footer.
+\oritoneDeclareLabel{page}{french}{Page}
+\oritoneDeclareLabel{of}{french}{sur}
+\oritoneDeclareLabel{updated}{french}{Mis a jour le}
+\oritoneDeclareLabel{page}{spanish}{Pagina}
+\oritoneDeclareLabel{of}{spanish}{de}
+\oritoneDeclareLabel{updated}{spanish}{Actualizado el}
+\oritoneDeclareLabel{page}{italian}{Pagina}
+\oritoneDeclareLabel{of}{italian}{di}
+\oritoneDeclareLabel{updated}{italian}{Aggiornato il}
+\oritoneDeclareLabel{page}{portuguese}{Pagina}
+\oritoneDeclareLabel{of}{portuguese}{de}
+\oritoneDeclareLabel{updated}{portuguese}{Atualizado em}
+\oritoneDeclareLabel{page}{dutch}{Pagina}
+\oritoneDeclareLabel{of}{dutch}{van}
+\oritoneDeclareLabel{updated}{dutch}{Bijgewerkt op}
+
+% Apply the active foreground/background colors to the page. Classes call this
+% after loading `oritone` so every mode, including black and dark, colors both
+% text and page background.
+\newcommand*\oritoneApplyPageColors{%
+  \color{foreground}%
+  \pagecolor{background}%
+}
+% Configure hyperref to use semantic link colors. The explicit guard keeps the
+% error understandable if a class or user calls this before loading hyperref.
+\newcommand*\oritoneSetSemanticLinks{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{%
+      colorlinks=true,
+      linkcolor=linkcolor,
+      citecolor=success,
+      urlcolor=linkcolor,
+      filecolor=linkcolor,
+      pdfborder={0 0 0}%
+    }%
+  }{%
+    \PackageError{oritone-design}{hyperref is not loaded}{%
+      Load hyperref before calling \string\oritoneSetSemanticLinks.%
+    }%
+  }%
+}
+
+% Callout support. The flag makes \oritonedefinecallouts safe to call from
+% multiple classes or packages in the same document.
+\newif\iforitone@calloutsdefined
+% Optional callout title renderer. Empty titles intentionally produce no vertical
+% title block so untitled callouts stay compact.
+\newcommand*\oritone@callouttitle[2]{%
+  \def\oritone@callouttitlevalue{#2}%
+  \ifx\oritone@callouttitlevalue\@empty
+  \else
+    {\oritoneDisplayFont\bfseries\color{#1}#2\par}%
+    \vspace{0.6mm}%
+  \fi
+}
+% Define three tcolorbox-based semantic callouts: note/accent, example/success,
+% and warning/danger. The environments are only installed after tcolorbox is
+% loaded, because loading that dependency is a class-level decision.
+\newcommand*\oritonedefinecallouts{%
+  \iforitone@calloutsdefined
+  \else
+    \@ifpackageloaded{tcolorbox}{%
+      \newenvironment{oritonenote}[1][]{%
+        \begin{tcolorbox}[
+          enhanced,
+          frame hidden,
+          sharp corners,
+          boxrule=0pt,
+          colback=accent!12!background,
+          coltext=foreground,
+          borderline west={\oritoneblockrulewidth}{0mm}{accent-dark},
+          left=\oritoneblockxsep,
+          right=\oritoneblockxsep,
+          top=\oritoneblockysep,
+          bottom=\oritoneblockysep,
+          boxsep=0mm
+        ]%
+        \oritone@callouttitle{accent-dark}{##1}%
+      }{%
+        \end{tcolorbox}%
+      }%
+      \newenvironment{oritoneexample}[1][]{%
+        \begin{tcolorbox}[
+          enhanced,
+          frame hidden,
+          sharp corners,
+          boxrule=0pt,
+          colback=success!12!background,
+          coltext=foreground,
+          borderline west={\oritoneblockrulewidth}{0mm}{darkgreen},
+          left=\oritoneblockxsep,
+          right=\oritoneblockxsep,
+          top=\oritoneblockysep,
+          bottom=\oritoneblockysep,
+          boxsep=0mm
+        ]%
+        \oritone@callouttitle{darkgreen}{##1}%
+      }{%
+        \end{tcolorbox}%
+      }%
+      \newenvironment{oritonewarning}[1][]{%
+        \begin{tcolorbox}[
+          enhanced,
+          frame hidden,
+          sharp corners,
+          boxrule=0pt,
+          colback=danger!12!background,
+          coltext=foreground,
+          borderline west={\oritoneblockrulewidth}{0mm}{darkred},
+          left=\oritoneblockxsep,
+          right=\oritoneblockxsep,
+          top=\oritoneblockysep,
+          bottom=\oritoneblockysep,
+          boxsep=0mm
+        ]%
+        \oritone@callouttitle{darkred}{##1}%
+      }{%
+        \end{tcolorbox}%
+      }%
+      \global\oritone@calloutsdefinedtrue
+    }{%
+      \PackageError{oritone-design}{tcolorbox is not loaded}{%
+        Load tcolorbox before calling \string\oritonedefinecallouts.%
+      }%
+    }%
+  \fi
+}
+
+\endinput

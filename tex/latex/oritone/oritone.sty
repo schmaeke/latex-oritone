@@ -1,0 +1,685 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{oritone}[2026/05/04 v0.1.0 Oritone color roles for LaTeX]
+
+% This package is the color and visualization foundation for all Oritone
+% classes and themes. It exposes semantic color names such as `foreground`,
+% `background`, `accent`, `linkcolor`, and `listingkeyword` so document classes
+% can talk about intent instead of specific hex values.
+%
+% Public entry points:
+%   \usepackage[mode=...,accent=...]{oritone}
+%   \oritonesetup{mode=...,accent=...}
+%   \oritonelistingssetup
+%   \oritonepgfplotssetup
+%
+% The package is split into these regions:
+%   1. Option parsing and runtime setup.
+%   2. Base palette data for light and dark color families.
+%   3. Semantic aliases, accent handling, and mode application.
+%   4. Optional listings and pgfplots integration.
+
+% Option handling. The `mode` option picks a background/foreground family,
+% `accent` picks the document accent, and `listings`/`plots` opt into loading
+% the optional integration packages from here. Unknown options are forwarded to
+% xcolor so package users can still pass standard color options.
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=oritone,prefix=oritone@}
+\DeclareStringOption[light]{mode}
+\DeclareStringOption[auto]{accent}
+\DeclareBoolOption{listings}
+\DeclareBoolOption{plots}
+\DeclareVoidOption{light}{\def\oritone@mode{light}}
+\DeclareVoidOption{dark}{\def\oritone@mode{dark}}
+\DeclareVoidOption{white}{\def\oritone@mode{white}}
+\DeclareVoidOption{black}{\def\oritone@mode{black}}
+\DeclareVoidOption{julia}{\oritone@listingstrue}
+\DeclareVoidOption{pgfplots}{\oritone@plotstrue}
+\DeclareDefaultOption{\PassOptionsToPackage{\CurrentOption}{xcolor}}
+\ProcessKeyvalOptions*
+
+\RequirePackage{xcolor}
+\RequirePackage{keyval}
+
+\iforitone@listings
+  \RequirePackage{listings}
+\fi
+
+\iforitone@plots
+  \RequirePackage{pgfplots}
+\fi
+
+% Runtime configuration mirrors the package options. Calling \oritonesetup
+% after package load recomputes the semantic aliases so later pages, listings,
+% links, and plots see the updated roles.
+\define@key{oritone}{mode}{\oritone@selectmode{#1}}
+\define@key{oritone}{accent}{\oritone@selectaccent{#1}}
+\newcommand*\oritonesetup[1]{%
+  \setkeys{oritone}{#1}%
+  \oritone@applymode
+}
+
+\def\oritone@mode@light{light}
+\def\oritone@mode@dark{dark}
+\def\oritone@mode@white{white}
+\def\oritone@mode@black{black}
+
+\newcommand*\oritone@selectmode[1]{%
+  \edef\oritone@requestedmode{#1}%
+  \@ifundefined{oritone@mode@\oritone@requestedmode}{%
+    \PackageWarning{oritone}{Unknown mode '\oritone@requestedmode'. Using 'light'}%
+    \def\oritone@mode{light}%
+  }{%
+    \edef\oritone@mode{\oritone@requestedmode}%
+  }%
+}
+
+% Base palette names are public and namespaced. They are generated from the
+% Oritone palette data and are deliberately independent of any document class.
+\definecolor{oritone-dark-bg0}{HTML}{0f1114}
+\definecolor{oritone-dark-bg1}{HTML}{15191c}
+\definecolor{oritone-dark-bg2}{HTML}{1d2327}
+\definecolor{oritone-dark-bg3}{HTML}{283036}
+\definecolor{oritone-dark-bg4}{HTML}{354048}
+\definecolor{oritone-dark-bg5}{HTML}{48545c}
+\definecolor{oritone-dark-bg6}{HTML}{637079}
+\definecolor{oritone-dark-fg0}{HTML}{fbf7ef}
+\definecolor{oritone-dark-fg1}{HTML}{e7e2d8}
+\definecolor{oritone-dark-fg2}{HTML}{d4cec3}
+\definecolor{oritone-dark-fg3}{HTML}{b9b4ac}
+\definecolor{oritone-dark-fg4}{HTML}{989d9c}
+\definecolor{oritone-dark-fg5}{HTML}{737b7d}
+\definecolor{oritone-dark-fg6}{HTML}{5b6368}
+\definecolor{oritone-dark-muted}{HTML}{989d9c}
+\definecolor{oritone-dark-muted2}{HTML}{737b7d}
+\definecolor{oritone-dark-muted3}{HTML}{637079}
+\definecolor{oritone-dark-border}{HTML}{354048}
+\definecolor{oritone-dark-orange}{HTML}{d89a43}
+\definecolor{oritone-dark-sky}{HTML}{77c5e8}
+\definecolor{oritone-dark-green}{HTML}{43b08a}
+\definecolor{oritone-dark-yellow}{HTML}{e5d264}
+\definecolor{oritone-dark-blue}{HTML}{56a6cf}
+\definecolor{oritone-dark-vermillion}{HTML}{dc6c43}
+\definecolor{oritone-dark-rose}{HTML}{ca86aa}
+\definecolor{oritone-dark-red}{HTML}{e06a5f}
+\definecolor{oritone-dark-amber}{HTML}{dcc566}
+\definecolor{oritone-dark-cyan}{HTML}{5fbfc0}
+\definecolor{oritone-dark-background-lower}{HTML}{0f1114}
+\definecolor{oritone-dark-background}{HTML}{15191c}
+\definecolor{oritone-dark-surface}{HTML}{1d2327}
+\definecolor{oritone-dark-surface-raised}{HTML}{283036}
+\definecolor{oritone-dark-surface-highest}{HTML}{354048}
+\definecolor{oritone-dark-divider}{HTML}{354048}
+\definecolor{oritone-dark-text-strong}{HTML}{fbf7ef}
+\definecolor{oritone-dark-text}{HTML}{e7e2d8}
+\definecolor{oritone-dark-text-subtle}{HTML}{b9b4ac}
+\definecolor{oritone-dark-text-muted}{HTML}{989d9c}
+\definecolor{oritone-dark-text-disabled}{HTML}{737b7d}
+\definecolor{oritone-dark-primary}{HTML}{56a6cf}
+\definecolor{oritone-dark-primary-hover}{HTML}{77c5e8}
+\definecolor{oritone-dark-secondary}{HTML}{ca86aa}
+\definecolor{oritone-dark-success}{HTML}{43b08a}
+\definecolor{oritone-dark-warning}{HTML}{dcc566}
+\definecolor{oritone-dark-danger}{HTML}{e06a5f}
+\definecolor{oritone-dark-info}{HTML}{77c5e8}
+\definecolor{oritone-dark-selection}{HTML}{283036}
+\definecolor{oritone-dark-selection-strong}{HTML}{354048}
+\definecolor{oritone-dark-highlight}{HTML}{22292b}
+\definecolor{oritone-dark-focus-ring}{HTML}{dcc566}
+\definecolor{oritone-dark-cursor}{HTML}{dcc566}
+\definecolor{oritone-dark-cursor-text}{HTML}{15191c}
+\definecolor{oritone-dark-terminal-background}{HTML}{15191c}
+\definecolor{oritone-dark-terminal-foreground}{HTML}{e7e2d8}
+\definecolor{oritone-dark-terminal-cursor}{HTML}{dcc566}
+\definecolor{oritone-dark-terminal-cursor-text}{HTML}{15191c}
+\definecolor{oritone-dark-terminal-selection-background}{HTML}{283036}
+\definecolor{oritone-dark-terminal-selection-foreground}{HTML}{fbf7ef}
+\definecolor{oritone-dark-ansi-black}{HTML}{0f1114}
+\definecolor{oritone-dark-ansi-red}{HTML}{e06a5f}
+\definecolor{oritone-dark-ansi-green}{HTML}{43b08a}
+\definecolor{oritone-dark-ansi-yellow}{HTML}{dcc566}
+\definecolor{oritone-dark-ansi-blue}{HTML}{56a6cf}
+\definecolor{oritone-dark-ansi-magenta}{HTML}{ca86aa}
+\definecolor{oritone-dark-ansi-cyan}{HTML}{5fbfc0}
+\definecolor{oritone-dark-ansi-white}{HTML}{d4cec3}
+\definecolor{oritone-dark-ansi-bright-black}{HTML}{637079}
+\definecolor{oritone-dark-ansi-bright-red}{HTML}{dc6c43}
+\definecolor{oritone-dark-ansi-bright-green}{HTML}{69caa5}
+\definecolor{oritone-dark-ansi-bright-yellow}{HTML}{e5d264}
+\definecolor{oritone-dark-ansi-bright-blue}{HTML}{77c5e8}
+\definecolor{oritone-dark-ansi-bright-magenta}{HTML}{dfa2c1}
+\definecolor{oritone-dark-ansi-bright-cyan}{HTML}{83d5d4}
+\definecolor{oritone-dark-ansi-bright-white}{HTML}{fbf7ef}
+
+\definecolor{oritone-light-bg0}{HTML}{fffdf8}
+\definecolor{oritone-light-bg1}{HTML}{f7f3eb}
+\definecolor{oritone-light-bg2}{HTML}{eee8dc}
+\definecolor{oritone-light-bg3}{HTML}{e2dace}
+\definecolor{oritone-light-bg4}{HTML}{d3cabe}
+\definecolor{oritone-light-bg5}{HTML}{b8afa3}
+\definecolor{oritone-light-bg6}{HTML}{91897e}
+\definecolor{oritone-light-fg0}{HTML}{171a1c}
+\definecolor{oritone-light-fg1}{HTML}{272c30}
+\definecolor{oritone-light-fg2}{HTML}{3b4246}
+\definecolor{oritone-light-fg3}{HTML}{525a5e}
+\definecolor{oritone-light-fg4}{HTML}{687075}
+\definecolor{oritone-light-fg5}{HTML}{828a8e}
+\definecolor{oritone-light-fg6}{HTML}{a0a6a8}
+\definecolor{oritone-light-muted}{HTML}{687075}
+\definecolor{oritone-light-muted2}{HTML}{596166}
+\definecolor{oritone-light-muted3}{HTML}{91897e}
+\definecolor{oritone-light-border}{HTML}{d3cabe}
+\definecolor{oritone-light-orange}{HTML}{955700}
+\definecolor{oritone-light-sky}{HTML}{1f759a}
+\definecolor{oritone-light-green}{HTML}{007a5a}
+\definecolor{oritone-light-yellow}{HTML}{806d00}
+\definecolor{oritone-light-blue}{HTML}{00699c}
+\definecolor{oritone-light-vermillion}{HTML}{b24600}
+\definecolor{oritone-light-rose}{HTML}{9b507d}
+\definecolor{oritone-light-red}{HTML}{a74b42}
+\definecolor{oritone-light-amber}{HTML}{7e6600}
+\definecolor{oritone-light-cyan}{HTML}{087b7c}
+\definecolor{oritone-light-background-lower}{HTML}{fffdf8}
+\definecolor{oritone-light-background}{HTML}{f7f3eb}
+\definecolor{oritone-light-surface}{HTML}{eee8dc}
+\definecolor{oritone-light-surface-raised}{HTML}{e2dace}
+\definecolor{oritone-light-surface-highest}{HTML}{d3cabe}
+\definecolor{oritone-light-divider}{HTML}{d3cabe}
+\definecolor{oritone-light-text-strong}{HTML}{171a1c}
+\definecolor{oritone-light-text}{HTML}{272c30}
+\definecolor{oritone-light-text-subtle}{HTML}{525a5e}
+\definecolor{oritone-light-text-muted}{HTML}{687075}
+\definecolor{oritone-light-text-disabled}{HTML}{828a8e}
+\definecolor{oritone-light-primary}{HTML}{00699c}
+\definecolor{oritone-light-primary-hover}{HTML}{1f759a}
+\definecolor{oritone-light-secondary}{HTML}{9b507d}
+\definecolor{oritone-light-success}{HTML}{007a5a}
+\definecolor{oritone-light-warning}{HTML}{7e6600}
+\definecolor{oritone-light-danger}{HTML}{a74b42}
+\definecolor{oritone-light-info}{HTML}{1f759a}
+\definecolor{oritone-light-selection}{HTML}{e2dace}
+\definecolor{oritone-light-selection-strong}{HTML}{d3cabe}
+\definecolor{oritone-light-highlight}{HTML}{eee8dc}
+\definecolor{oritone-light-focus-ring}{HTML}{00699c}
+\definecolor{oritone-light-cursor}{HTML}{00699c}
+\definecolor{oritone-light-cursor-text}{HTML}{fffdf8}
+\definecolor{oritone-light-terminal-background}{HTML}{f7f3eb}
+\definecolor{oritone-light-terminal-foreground}{HTML}{272c30}
+\definecolor{oritone-light-terminal-cursor}{HTML}{00699c}
+\definecolor{oritone-light-terminal-cursor-text}{HTML}{fffdf8}
+\definecolor{oritone-light-terminal-selection-background}{HTML}{d3cabe}
+\definecolor{oritone-light-terminal-selection-foreground}{HTML}{171a1c}
+\definecolor{oritone-light-ansi-black}{HTML}{272c30}
+\definecolor{oritone-light-ansi-red}{HTML}{a74b42}
+\definecolor{oritone-light-ansi-green}{HTML}{007a5a}
+\definecolor{oritone-light-ansi-yellow}{HTML}{7e6600}
+\definecolor{oritone-light-ansi-blue}{HTML}{00699c}
+\definecolor{oritone-light-ansi-magenta}{HTML}{9b507d}
+\definecolor{oritone-light-ansi-cyan}{HTML}{087b7c}
+\definecolor{oritone-light-ansi-white}{HTML}{eee8dc}
+\definecolor{oritone-light-ansi-bright-black}{HTML}{687075}
+\definecolor{oritone-light-ansi-bright-red}{HTML}{b24600}
+\definecolor{oritone-light-ansi-bright-green}{HTML}{15906f}
+\definecolor{oritone-light-ansi-bright-yellow}{HTML}{806d00}
+\definecolor{oritone-light-ansi-bright-blue}{HTML}{1f759a}
+\definecolor{oritone-light-ansi-bright-magenta}{HTML}{b46591}
+\definecolor{oritone-light-ansi-bright-cyan}{HTML}{279697}
+\definecolor{oritone-light-ansi-bright-white}{HTML}{fffdf8}
+
+% Derived families are convenience aliases built from the active foreground,
+% background, and hue colors. Classes use names such as `darkgreen` for callout
+% rules without needing to care whether the active mode is light or dark.
+\newcommand*\oritone@derivefamilies{%
+  \colorlet{verylightred}{red!18!background}%
+  \colorlet{lightred}{red!45!background}%
+  \colorlet{darkred}{red!70!foreground}%
+  \colorlet{verydarkred}{red!86!foreground}%
+  \colorlet{verylightyellow}{yellow!18!background}%
+  \colorlet{lightyellow}{yellow!45!background}%
+  \colorlet{darkyellow}{yellow!70!foreground}%
+  \colorlet{verydarkyellow}{yellow!86!foreground}%
+  \colorlet{verylightorange}{orange!18!background}%
+  \colorlet{lightorange}{orange!45!background}%
+  \colorlet{darkorange}{orange!70!foreground}%
+  \colorlet{verydarkorange}{orange!86!foreground}%
+  \colorlet{verylightgreen}{green!18!background}%
+  \colorlet{lightgreen}{green!45!background}%
+  \colorlet{darkgreen}{green!70!foreground}%
+  \colorlet{verydarkgreen}{green!86!foreground}%
+  \colorlet{verylightblue}{blue!18!background}%
+  \colorlet{lightblue}{blue!45!background}%
+  \colorlet{darkblue}{blue!70!foreground}%
+  \colorlet{verydarkblue}{blue!86!foreground}%
+  \colorlet{verylightpurple}{purple!18!background}%
+  \colorlet{lightpurple}{purple!45!background}%
+  \colorlet{darkpurple}{purple!70!foreground}%
+  \colorlet{verydarkpurple}{purple!86!foreground}%
+  \colorlet{verylightcyan}{cyan!18!background}%
+  \colorlet{lightcyan}{cyan!45!background}%
+  \colorlet{darkcyan}{cyan!70!foreground}%
+  \colorlet{verydarkcyan}{cyan!86!foreground}%
+  \colorlet{lightgray}{foreground!15!background}%
+  \colorlet{gray}{foreground!45!background}%
+  \colorlet{darkgray}{foreground!70!background}%
+}
+
+% Functional roles are the class-facing API. They translate the active palette
+% into stable names used by classes, listings, plots, captions, links, and
+% headers/footers.
+\newcommand*\oritone@setfunctionalroles{%
+  \colorlet{body}{surface}%
+  \colorlet{headings}{text-strong}%
+  \colorlet{headerandfooter}{text-muted}%
+  \colorlet{accent}{primary}%
+  \colorlet{accent-hover}{primary-hover}%
+  \colorlet{linkcolor}{primary}%
+  \colorlet{listingkeyword}{secondary}%
+  \colorlet{listingtype}{primary}%
+  \colorlet{listingfunction}{info}%
+  \colorlet{listingcomment}{success}%
+  \colorlet{listingstring}{orange}%
+  \colorlet{listingemphasis}{warning}%
+  \colorlet{listingrule}{border}%
+  \colorlet{listingbackground}{surface}%
+  \colorlet{plotblue}{blue}%
+  \colorlet{plotorange}{orange}%
+  \colorlet{plotgreen}{green}%
+  \colorlet{plotgold}{amber}%
+  \colorlet{plotpurple}{purple}%
+  \colorlet{plotskyblue}{sky}%
+  \colorlet{plotyellow}{yellow}%
+  \colorlet{plotgray}{text-muted}%
+}
+
+% Accent colors are computed from one base hue. The extra light/dark variants
+% make it possible to use the same accent in title rules, callout borders, link
+% colors, and Beamer progress bars while preserving contrast in every mode.
+\newcommand*\oritone@setaccentcolors[1]{%
+  \colorlet{accent}{#1}%
+  \colorlet{accent-hover}{#1!86!foreground}%
+  \colorlet{accent-verylight}{#1!18!background}%
+  \colorlet{accent-light}{#1!46!background}%
+  \colorlet{accent-dark}{#1!70!foreground}%
+  \colorlet{accent-verydark}{#1!86!foreground}%
+  \colorlet{linkcolor}{accent}%
+}
+% User-facing accent names are aliases because some design terms changed over
+% time. `purple` intentionally maps to the rose hue to keep older documents
+% compiling with the current palette.
+\newcommand*\oritone@defineaccentalias[2]{\@namedef{oritone@accent@#1}{#2}}
+\oritone@defineaccentalias{orange}{orange}
+\oritone@defineaccentalias{sky}{sky}
+\oritone@defineaccentalias{green}{green}
+\oritone@defineaccentalias{yellow}{yellow}
+\oritone@defineaccentalias{blue}{blue}
+\oritone@defineaccentalias{vermillion}{vermillion}
+\oritone@defineaccentalias{rose}{rose}
+\oritone@defineaccentalias{purple}{rose}
+\oritone@defineaccentalias{red}{red}
+\oritone@defineaccentalias{amber}{amber}
+\oritone@defineaccentalias{cyan}{cyan}
+\oritone@defineaccentalias{primary}{primary}
+\oritone@defineaccentalias{secondary}{secondary}
+\oritone@defineaccentalias{success}{success}
+\oritone@defineaccentalias{warning}{warning}
+\oritone@defineaccentalias{danger}{danger}
+\oritone@defineaccentalias{info}{info}
+\def\oritone@accent@auto{auto}
+\def\oritone@defaultaccent{blue}
+% Store the requested accent. Validation is delayed until mode application so
+% the default accent can be resolved consistently from package options and from
+% later \oritonesetup calls.
+\newcommand*\oritone@selectaccent[1]{%
+  \edef\oritone@accent{#1}%
+}
+% Validate the requested accent and derive all accent-* semantic aliases.
+\newcommand*\oritone@applyaccent{%
+  \edef\oritone@requestedaccent{\oritone@accent}%
+  \ifx\oritone@requestedaccent\oritone@accent@auto
+    \edef\oritone@requestedaccent{\oritone@defaultaccent}%
+  \fi
+  \@ifundefined{oritone@accent@\oritone@requestedaccent}{%
+    \PackageWarning{oritone}{Unknown accent '\oritone@requestedaccent'. Using '\oritone@defaultaccent'}%
+    \edef\oritone@requestedaccent{\oritone@defaultaccent}%
+  }{}%
+  \edef\oritone@accentcolor{\@nameuse{oritone@accent@\oritone@requestedaccent}}%
+  \expandafter\oritone@setaccentcolors\expandafter{\oritone@accentcolor}%
+}
+
+% Light and dark hue families select the named base hues used by semantic
+% roles. The foreground/background/surface roles are set by the concrete mode
+% commands below, while hue families are shared by light/white and dark/black.
+\newcommand*\oritone@setlightfamily{%
+  \colorlet{orange}{oritone-light-orange}%
+  \colorlet{sky}{oritone-light-sky}%
+  \colorlet{green}{oritone-light-green}%
+  \colorlet{yellow}{oritone-light-yellow}%
+  \colorlet{blue}{oritone-light-blue}%
+  \colorlet{vermillion}{oritone-light-vermillion}%
+  \colorlet{purple}{oritone-light-rose}%
+  \colorlet{rose}{oritone-light-rose}%
+  \colorlet{red}{oritone-light-red}%
+  \colorlet{amber}{oritone-light-amber}%
+  \colorlet{cyan}{oritone-light-cyan}%
+  \colorlet{primary}{oritone-light-primary}%
+  \colorlet{primary-hover}{oritone-light-primary-hover}%
+  \colorlet{secondary}{oritone-light-secondary}%
+  \colorlet{success}{oritone-light-success}%
+  \colorlet{warning}{oritone-light-warning}%
+  \colorlet{danger}{oritone-light-danger}%
+  \colorlet{info}{oritone-light-info}%
+}
+
+\newcommand*\oritone@setdarkfamily{%
+  \colorlet{orange}{oritone-dark-orange}%
+  \colorlet{sky}{oritone-dark-sky}%
+  \colorlet{green}{oritone-dark-green}%
+  \colorlet{yellow}{oritone-dark-yellow}%
+  \colorlet{blue}{oritone-dark-blue}%
+  \colorlet{vermillion}{oritone-dark-vermillion}%
+  \colorlet{purple}{oritone-dark-rose}%
+  \colorlet{rose}{oritone-dark-rose}%
+  \colorlet{red}{oritone-dark-red}%
+  \colorlet{amber}{oritone-dark-amber}%
+  \colorlet{cyan}{oritone-dark-cyan}%
+  \colorlet{primary}{oritone-dark-primary}%
+  \colorlet{primary-hover}{oritone-dark-primary-hover}%
+  \colorlet{secondary}{oritone-dark-secondary}%
+  \colorlet{success}{oritone-dark-success}%
+  \colorlet{warning}{oritone-dark-warning}%
+  \colorlet{danger}{oritone-dark-danger}%
+  \colorlet{info}{oritone-dark-info}%
+}
+
+% `light` uses the full light palette: off-white background, subdued surfaces,
+% and dark text.
+\newcommand*\oritonelightcolors{%
+  \colorlet{foreground}{oritone-light-text}%
+  \colorlet{background}{oritone-light-background}%
+  \colorlet{background-lower}{oritone-light-background-lower}%
+  \colorlet{surface}{oritone-light-surface}%
+  \colorlet{surface-raised}{oritone-light-surface-raised}%
+  \colorlet{surface-highest}{oritone-light-surface-highest}%
+  \colorlet{border}{oritone-light-border}%
+  \colorlet{divider}{oritone-light-divider}%
+  \colorlet{text-strong}{oritone-light-text-strong}%
+  \colorlet{text}{oritone-light-text}%
+  \colorlet{text-subtle}{oritone-light-text-subtle}%
+  \colorlet{text-muted}{oritone-light-text-muted}%
+  \colorlet{text-disabled}{oritone-light-text-disabled}%
+  \colorlet{selection}{oritone-light-selection}%
+  \colorlet{selection-strong}{oritone-light-selection-strong}%
+  \colorlet{highlight}{oritone-light-highlight}%
+  \colorlet{focus-ring}{oritone-light-focus-ring}%
+  \colorlet{cursor}{oritone-light-cursor}%
+  \colorlet{cursor-text}{oritone-light-cursor-text}%
+  \oritone@setlightfamily
+  \oritone@derivefamilies
+  \oritone@setfunctionalroles
+}
+
+% `dark` uses the full dark palette: dark surface hierarchy and light text.
+\newcommand*\oritonedarkcolors{%
+  \colorlet{foreground}{oritone-dark-text}%
+  \colorlet{background}{oritone-dark-background}%
+  \colorlet{background-lower}{oritone-dark-background-lower}%
+  \colorlet{surface}{oritone-dark-surface}%
+  \colorlet{surface-raised}{oritone-dark-surface-raised}%
+  \colorlet{surface-highest}{oritone-dark-surface-highest}%
+  \colorlet{border}{oritone-dark-border}%
+  \colorlet{divider}{oritone-dark-divider}%
+  \colorlet{text-strong}{oritone-dark-text-strong}%
+  \colorlet{text}{oritone-dark-text}%
+  \colorlet{text-subtle}{oritone-dark-text-subtle}%
+  \colorlet{text-muted}{oritone-dark-text-muted}%
+  \colorlet{text-disabled}{oritone-dark-text-disabled}%
+  \colorlet{selection}{oritone-dark-selection}%
+  \colorlet{selection-strong}{oritone-dark-selection-strong}%
+  \colorlet{highlight}{oritone-dark-highlight}%
+  \colorlet{focus-ring}{oritone-dark-focus-ring}%
+  \colorlet{cursor}{oritone-dark-cursor}%
+  \colorlet{cursor-text}{oritone-dark-cursor-text}%
+  \oritone@setdarkfamily
+  \oritone@derivefamilies
+  \oritone@setfunctionalroles
+}
+
+% `white` keeps the page purely white/black while reusing the light hue family
+% for accents and semantic colors. This is useful for print-oriented examples.
+\newcommand*\oritonewhitecolors{%
+  \definecolor{foreground}{HTML}{000000}%
+  \definecolor{background}{HTML}{ffffff}%
+  \colorlet{background-lower}{background}%
+  \colorlet{surface}{foreground!3!background}%
+  \colorlet{surface-raised}{foreground!6!background}%
+  \colorlet{surface-highest}{foreground!10!background}%
+  \colorlet{border}{foreground!18!background}%
+  \colorlet{divider}{foreground!14!background}%
+  \colorlet{text-strong}{foreground}%
+  \colorlet{text}{foreground!88!background}%
+  \colorlet{text-subtle}{foreground!68!background}%
+  \colorlet{text-muted}{foreground!52!background}%
+  \colorlet{text-disabled}{foreground!38!background}%
+  \colorlet{selection}{foreground!10!background}%
+  \colorlet{selection-strong}{foreground!16!background}%
+  \colorlet{highlight}{foreground!5!background}%
+  \colorlet{focus-ring}{oritone-light-primary}%
+  \colorlet{cursor}{oritone-light-primary}%
+  \colorlet{cursor-text}{background}%
+  \oritone@setlightfamily
+  \oritone@derivefamilies
+  \oritone@setfunctionalroles
+}
+
+% `black` keeps the page purely black/white while reusing the dark hue family.
+\newcommand*\oritoneblackcolors{%
+  \definecolor{foreground}{HTML}{ffffff}%
+  \definecolor{background}{HTML}{000000}%
+  \colorlet{background-lower}{background}%
+  \colorlet{surface}{foreground!7!background}%
+  \colorlet{surface-raised}{foreground!11!background}%
+  \colorlet{surface-highest}{foreground!16!background}%
+  \colorlet{border}{foreground!24!background}%
+  \colorlet{divider}{foreground!20!background}%
+  \colorlet{text-strong}{foreground}%
+  \colorlet{text}{foreground!88!background}%
+  \colorlet{text-subtle}{foreground!70!background}%
+  \colorlet{text-muted}{foreground!55!background}%
+  \colorlet{text-disabled}{foreground!40!background}%
+  \colorlet{selection}{foreground!14!background}%
+  \colorlet{selection-strong}{foreground!22!background}%
+  \colorlet{highlight}{foreground!10!background}%
+  \colorlet{focus-ring}{oritone-dark-warning}%
+  \colorlet{cursor}{oritone-dark-warning}%
+  \colorlet{cursor-text}{background}%
+  \oritone@setdarkfamily
+  \oritone@derivefamilies
+  \oritone@setfunctionalroles
+}
+
+% Apply the selected mode in two passes: first validate the mode and install
+% the color family, then derive the accent aliases from that active family.
+\newcommand*\oritone@applymode{%
+  \oritone@selectmode{\oritone@mode}%
+  \csname oritone\oritone@mode colors\endcsname
+  \oritone@applyaccent
+}
+
+% listings integration. The setup is idempotent so classes can call
+% \oritonelistingssetup unconditionally after loading listings. The base style
+% keeps the listing font small but inherits the document line spacing.
+\newif\iforitone@listingssetup
+\newcommand*\oritone@listingssetup{%
+  \iforitone@listingssetup
+  \else
+    \oritone@listingssetuptrue
+    \lstdefinelanguage{Julia}%
+      {morekeywords={abstract,begin,break,case,catch,const,continue,do,else,elseif,%
+          end,export,false,for,function,if,import,importall,in,let,macro,module,%
+          mutable,primitive,quote,return,struct,true,try,type,using,where,while},%
+       morekeywords=[2]{AbstractArray,Array,Bool,Dict,Float64,Function,Int,Matrix,%
+          NamedTuple,Nothing,Real,String,Symbol,Tuple,Vector},%
+       morekeywords=[3]{abs,copy,eachindex,error,fill!,length,map,maximum,norm,%
+          ones,print,println,push!,range,similar,sqrt,sum,zeros},%
+       sensitive=true,%
+       alsoletter={!},%
+       alsoother={$},%
+       morecomment=[l]\#,%
+       morecomment=[n]{\#=}{=\#},%
+       morestring=[s]{"}{"},%
+       morestring=[m]{'}{'},%
+      }[keywords,comments,strings]%
+    \lstdefinestyle{oritone-listing}{%
+      frame=single,
+      framerule=0.25mm,
+      framesep=1.5mm,
+      rulecolor=\color{listingrule},
+      belowcaptionskip=2mm,
+      aboveskip=0.75\baselineskip,
+      belowskip=0.75\baselineskip,
+      showstringspaces=false,
+      columns=fullflexible,
+      keepspaces=true,
+      basicstyle={\ttfamily\footnotesize\color{foreground}},
+      numbers=left,
+      numbersep=6pt,
+      numberstyle={\color{text-muted}\ttfamily\scriptsize},
+      xleftmargin=12pt,
+      xrightmargin=0pt,
+      keywordstyle={\color{listingkeyword}},
+      keywordstyle=[2]{\color{listingtype}},
+      keywordstyle=[3]{\color{listingfunction}},
+      commentstyle={\color{listingcomment}\itshape},
+      stringstyle={\color{listingstring}},
+      breaklines=true,
+      breakatwhitespace=true,
+      tabsize=2,
+      backgroundcolor=\color{listingbackground},
+      mathescape=true,
+      captionpos=b,
+      emphstyle={\color{listingemphasis}},
+      escapechar=?,
+      upquote=true,
+    }%
+    % Aliases kept for document classes and older examples. They currently
+    % point at the same framed style, while `oritone-listing-algorithm` selects
+    % Julia syntax highlighting.
+    \lstdefinestyle{oritone-julia}{%
+      style=oritone-listing,
+      language=Julia,
+    }%
+    \lstdefinestyle{oritone-listing-numbered}{%
+      style=oritone-listing,
+    }%
+    \lstdefinestyle{oritone-listing-code}{%
+      style=oritone-listing,
+    }%
+    \lstdefinestyle{oritone-listing-algorithm}{%
+      style=oritone-julia,
+    }%
+  \fi
+}
+
+% Public guard around the private setup routine. It gives a clear error if the
+% caller forgot to load listings or use the `listings` package option.
+\newcommand*\oritonelistingssetup{%
+  \@ifpackageloaded{listings}{%
+    \oritone@listingssetup
+  }{%
+    \PackageError{oritone}{listings is not loaded}{%
+      Load listings before \string\oritonelistingssetup\space or use
+      \string\usepackage[listings]{oritone}.%
+    }%
+  }%
+}
+
+% Hook support lets users load listings before or after oritone. Older LaTeX
+% kernels fall back to an AtBeginDocument check.
+\@ifpackageloaded{listings}{\oritone@listingssetup}{}
+\@ifundefined{AddToHook}{%
+  \AtBeginDocument{\@ifpackageloaded{listings}{\oritone@listingssetup}{}}%
+}{%
+  \AddToHook{package/listings/after}{\oritone@listingssetup}%
+}
+
+% pgfplots integration. The setup installs cycle lists and a scientific
+% colormap using Oritone semantic plot colors. It is idempotent so classes may
+% call it safely.
+\newif\iforitone@pgfplotssetup
+\newcommand*\oritone@pgfplotssetup{%
+  \iforitone@pgfplotssetup
+  \else
+    \oritone@pgfplotssetuptrue
+    \pgfplotscreateplotcyclelist{oritone markers}{%
+      {plotblue, line width=0.9pt, mark=*, mark size=2.2pt,
+        mark options={solid, draw=plotblue!55!black, fill=plotblue, line width=0.35pt}}\\%
+      {plotorange, line width=0.9pt, mark=square*, mark size=2.2pt,
+        mark options={solid, draw=plotorange!55!black, fill=plotorange, line width=0.35pt}}\\%
+      {plotgreen, line width=0.9pt, mark=triangle*, mark size=2.3pt,
+        mark options={solid, draw=plotgreen!55!black, fill=plotgreen, line width=0.35pt}}\\%
+      {plotgold, line width=0.9pt, mark=diamond*, mark size=2.4pt,
+        mark options={solid, draw=plotgold!55!black, fill=plotgold, line width=0.35pt}}\\%
+      {plotpurple, line width=0.9pt, mark=pentagon*, mark size=2.3pt,
+        mark options={solid, draw=plotpurple!55!black, fill=plotpurple, line width=0.35pt}}\\%
+      {plotskyblue, line width=0.9pt, mark=*, mark size=2.2pt,
+        mark options={solid, draw=plotskyblue!55!black, fill=plotskyblue, line width=0.35pt}}\\%
+      {plotyellow, line width=0.9pt, mark=square*, mark size=2.2pt,
+        mark options={solid, draw=plotyellow!55!black, fill=plotyellow, line width=0.35pt}}\\%
+      {plotgray, line width=0.9pt, mark=triangle*, mark size=2.3pt,
+        mark options={solid, draw=plotgray!55!black, fill=plotgray, line width=0.35pt}}\\%
+    }%
+    \pgfplotscreateplotcyclelist{oritone no markers}{%
+      {plotblue, line width=0.9pt, mark=none}\\%
+      {plotorange, line width=0.9pt, mark=none}\\%
+      {plotgreen, line width=0.9pt, mark=none}\\%
+      {plotgold, line width=0.9pt, mark=none}\\%
+      {plotpurple, line width=0.9pt, mark=none}\\%
+      {plotskyblue, line width=0.9pt, mark=none}\\%
+      {plotyellow, line width=0.9pt, mark=none}\\%
+      {plotgray, line width=0.9pt, mark=none}\\%
+    }%
+    \pgfplotsset{
+      colormap={oritone scientific}{%
+        rgb255=(0, 36, 57)
+        rgb255=(0, 105, 156)
+        rgb255=(31, 117, 154)
+        rgb255=(8, 123, 124)
+        rgb255=(0, 122, 90)
+        rgb255=(126, 102, 0)
+        rgb255=(149, 87, 0)
+        rgb255=(178, 70, 0)
+        rgb255=(167, 75, 66)
+      },
+      oritone markers/.style={cycle list name=oritone markers},
+      oritone no markers/.style={cycle list name=oritone no markers},
+      plot markers/.style={cycle list name=oritone markers},
+      plot no markers/.style={cycle list name=oritone no markers},
+      oritone markers,
+      colormap name=oritone scientific,
+    }%
+  \fi
+}
+
+% Public guard around pgfplots setup, matching the listings guard above.
+\newcommand*\oritonepgfplotssetup{%
+  \@ifpackageloaded{pgfplots}{%
+    \oritone@pgfplotssetup
+  }{%
+    \PackageError{oritone}{pgfplots is not loaded}{%
+      Load pgfplots before \string\oritonepgfplotssetup\space or use
+      \string\usepackage[plots]{oritone}.%
+    }%
+  }%
+}
+
+% As with listings, support both load orders for pgfplots.
+\@ifpackageloaded{pgfplots}{\oritone@pgfplotssetup}{}
+\@ifundefined{AddToHook}{%
+  \AtBeginDocument{\@ifpackageloaded{pgfplots}{\oritone@pgfplotssetup}{}}%
+}{%
+  \AddToHook{package/pgfplots/after}{\oritone@pgfplotssetup}%
+}
+
+% Install the initial semantic color roles as the final package action.
+\oritone@applymode
+\endinput

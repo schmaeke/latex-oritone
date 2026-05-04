@@ -1,0 +1,15 @@
+\input{regression-test.tex}
+\documentclass{article}
+\usepackage[plots]{oritone}
+\pgfplotsset{compat=1.18}
+\begin{document}
+\START
+\TYPE{oritone plots}
+\begin{tikzpicture}
+  \begin{axis}[width=5cm,height=3.5cm]
+    \addplot coordinates {(0,0) (1,1)};
+    \addplot coordinates {(0,1) (1,0)};
+  \end{axis}
+\end{tikzpicture}
+\END
+\end{document}

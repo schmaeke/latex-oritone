@@ -1,0 +1,143 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{beamerthemeOritone}[2026/05/04 v0.1.0 Oritone Beamer theme]
+
+% Top-level Beamer theme. It wires together the shared options, color theme,
+% font theme, inner theme, and outer theme, then provides presentation-specific
+% helpers for slide backgrounds, standout frames, section frames, closing frames,
+% logos, coauthors, and listing defaults.
+
+\RequirePackage{oritonebeameroptions}
+\RequirePackage{xcolor}
+\RequirePackage{hyperref}
+\RequirePackage{listings}
+\RequirePackage{tikz}
+\usetikzlibrary{calc,fadings}
+
+% Process theme options once here; subthemes also declare the shared options so
+% they can be loaded independently if needed.
+\oritonebeamer@declareoptions
+\ProcessOptionsBeamer
+
+% Assemble the Beamer theme parts.
+\usecolortheme{Oritone}
+\usefonttheme{Oritone}
+\useinnertheme{Oritone}
+\useoutertheme{Oritone}
+
+% Optional background image for ordinary slides. The image is clipped to a
+% curved upper-right wedge by the background canvas template below.
+\def\oritonebeamer@slidebackground{}
+\newcommand{\slidebackground}[1]{\def\oritonebeamer@slidebackground{#1}}
+\newcommand{\noslidebackground}{\def\oritonebeamer@slidebackground{}}
+
+% Fade mask for the curved slide background image. It gradually reveals the
+% image toward the page corner so text remains readable over the page color.
+\begin{tikzfadingfrompicture}[name=oritonebeamer@slidebackgroundfade]
+  \path[use as bounding box] (-0.5\paperwidth,-0.5\paperheight) rectangle (0.5\paperwidth,0.5\paperheight);
+  \foreach \oritonebeamer@fadeindex in {1,...,96}{%
+    \pgfmathsetmacro{\oritonebeamer@fadefraction}{\oritonebeamer@fadeindex / 96}%
+    \pgfmathtruncatemacro{\oritonebeamer@fadetransparency}{round(100 - 100 * \oritonebeamer@fadefraction)}%
+    \fill[pgftransparent!\oritonebeamer@fadetransparency]
+      ($(0,0.5\paperheight)!\oritonebeamer@fadefraction!(0.5\paperwidth,0.5\paperheight)$)
+      to[out=0,in=90]
+      ($(0.5\paperwidth,0)!\oritonebeamer@fadefraction!(0.5\paperwidth,0.5\paperheight)$)
+      -- (0.5\paperwidth,0.5\paperheight)
+      -- cycle;
+  }%
+\end{tikzfadingfrompicture}
+
+% Background canvas template. Always paints the page background, then overlays
+% the optional clipped/faded background image.
+\newcommand{\oritonebeamer@curvedslidebackground}{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \usebeamercolor{background canvas}%
+    \fill[bg] (current page.south west) rectangle (current page.north east);
+    \ifx\oritonebeamer@slidebackground\@empty
+    \else
+      \begin{scope}
+        \clip (current page.north) to[out=0,in=90] (current page.east) -- (current page.north east) -- cycle;
+        \begin{scope}
+          \pgfsetfading{oritonebeamer@slidebackgroundfade}{%
+            \pgftransformshift{\pgfpointanchor{current page}{center}}%
+          }%
+          \node[anchor=east, inner sep=0pt, outer sep=0pt] at (current page.east) {%
+            \includegraphics[height=\paperheight]{\oritonebeamer@slidebackground}%
+          };
+        \end{scope}
+      \end{scope}
+    \fi
+  \end{tikzpicture}%
+}
+\setbeamertemplate{background canvas}{\oritonebeamer@curvedslidebackground}
+
+% Standout frame shell used by section and closing frames. It suppresses normal
+% header/footer chrome and draws a slim accent rule at the left edge.
+\newcommand{\standoutframe}[1]{%
+  \begingroup
+  \setbeamertemplate{headline}{}%
+  \setbeamertemplate{footline}{}%
+  \setbeamertemplate{background}{%
+    \begingroup
+    \usebeamercolor{frametitle}%
+    \color{fg}\rule{1.4mm}{\paperheight}%
+    \endgroup
+  }%
+  \begin{frame}[t,noframenumbering]
+    #1%
+  \end{frame}%
+  \endgroup
+}
+
+% Public helper for section divider slides.
+\newcommand{\sectionframe}[1]{%
+  \section{#1}%
+  \standoutframe{%
+    \vspace*{4mm}\par\noindent
+    \usebeamercolor{sectionframetitle}%
+    \usebeamerfont{sectionframetitle}%
+    {\color{fg}#1}\\
+    \usebeamercolor{sectionframesubtitle}%
+    \usebeamerfont{sectionframesubtitle}%
+    {\normalfont\color{fg}\MakeUppercase{\oritonecurrentlabel{section}}\space\thesection}\\[5mm]
+  }%
+}
+
+% Public helper for closing slides. Arguments are top text, middle text, and
+% bottom text; the deck title and optional small logo are inserted automatically.
+\newcommand{\closingframe}[3]{%
+  \standoutframe{%
+    \usebeamerfont{normal text}%
+    \usebeamercolor{normal text}%
+    \vfill
+    \begin{center}
+      \color{fg}%
+      #1\\
+      \vspace*{10mm}
+      {\usebeamerfont{closing title}\usebeamercolor[fg]{closing title}\inserttitle}\\
+      \vspace*{10mm}
+      #2\\
+      \vspace*{7mm}
+      \@ifundefined{smalllogovalue}{%
+        \oritonebeamer@missinglogo{\string\smalllogo\{...\}}%
+      }{%
+        \includegraphics[width=4cm,height=14mm,keepaspectratio]{\smalllogovalue}\\
+      }%
+      \vspace*{7mm}
+      #3
+    \end{center}
+    \vfill
+  }%
+}
+
+% Small presentation metadata helpers.
+\newcommand{\weblink}[1]{\href{https://#1}{\texttt{#1}}}
+\newcommand{\coauthors}[1]{\def\coauthorsvalue{#1}}
+\newcommand{\biglogo}[1]{\def\biglogovalue{#1}}
+\newcommand{\smalllogo}[1]{\def\smalllogovalue{#1}}
+
+% Apply the shared Oritone listing style to Beamer documents.
+\oritonelistingssetup
+\lstset{style=oritone-listing}
+
+\endinput

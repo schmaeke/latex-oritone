@@ -1,0 +1,16 @@
+\input{regression-test.tex}
+\documentclass{article}
+\usepackage[mode=white]{oritone}
+\begin{document}
+\START
+\TYPE{oritone color modes}
+\oritonesetup{mode=light}
+\textcolor{accent}{light}
+\oritonesetup{mode=dark}
+\textcolor{accent}{dark}
+\oritonesetup{mode=white}
+\textcolor{accent}{white}
+\oritonesetup{mode=black}
+\textcolor{accent}{black}
+\END
+\end{document}

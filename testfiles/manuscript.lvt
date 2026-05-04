@@ -1,0 +1,26 @@
+\input{regression-test.tex}
+\documentclass[white,oneside]{oritone-manuscript}
+\title{Oritone Manuscript Smoke Test}
+\author{Ada Example}
+\date{2026-05-04}
+\begin{document}
+\START
+\TYPE{oritone manuscript class}
+\OMIT
+\maketitle
+\begin{abstract}
+This abstract checks the public manuscript front matter.
+\end{abstract}
+\keywords{Oritone\keywordsep manuscript\keywordsep smoke test}
+\section{Introduction}
+The manuscript class should compile headings, callouts, and listings.
+\begin{oritonenote}[Note]
+The shared callout environment is available.
+\end{oritonenote}
+\begin{lstlisting}[language=Python]
+def value():
+    return 1
+\end{lstlisting}
+\TIMO
+\END
+\end{document}

@@ -1,0 +1,479 @@
+\documentclass[white,11pt,oneside]{oritone-manuscript}
+
+\usepackage{array}
+\lstset{mathescape=false}
+
+\title{Oritone LaTeX Manual}
+\author{Oritone Maintainers}
+\date{2026-05-04}
+
+\newcommand{\pkg}[1]{\textsf{#1}}
+\newcommand{\cls}[1]{\textsf{#1}}
+\newcommand{\opt}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{\textbackslash{}#1}}
+\newcommand{\envname}[1]{\texttt{#1}}
+\newcommand{\filename}[1]{\begingroup\Urlmuskip=0mu plus 2mu\path{#1}\endgroup}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Oritone is a LaTeX package and class collection for CVs, manuscripts, theses,
+and Beamer presentations. It centralizes color roles, font roles, listings,
+plots, localized labels, callouts, title rules, and page furniture so the
+individual document frontends share one visual language.
+\end{abstract}
+
+\keywords{LaTeX\keywordsep document classes\keywordsep Beamer theme\keywordsep
+Recursive fonts\keywordsep technical documents}
+
+\tableofcontents
+
+\section{Package Layout}
+
+The public source tree is intentionally small:
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{L{0.40\linewidth}L{0.49\linewidth}}
+\hline
+Path & Purpose \\
+\hline
+\filename{tex/latex/oritone/oritone.sty} &
+Shared palette, color modes, semantic color roles, listings, and PGFPlots
+integration. \\
+\filename{tex/latex/oritone/oritone-fonts.sty} &
+Engine-aware font role loading for serif, sans, mono, and math fonts. \\
+\filename{tex/latex/oritone/oritone-design.sty} &
+Shared document-design helpers: labels, links, page colors, callouts, and
+ruled title blocks. \\
+\filename{tex/latex/oritone/oritone-cv.cls} &
+Compact CV class based on \cls{article}. \\
+\filename{tex/latex/oritone/oritone-manuscript.cls} &
+Review-friendly manuscript class based on \cls{extarticle}. \\
+\filename{tex/latex/oritone/oritone-thesis.cls} &
+Long-form thesis class based on \cls{book}. \\
+\filename{tex/latex/oritone/beamerthemeOritone.sty} and subthemes &
+Beamer theme, color theme, font theme, inner theme, outer theme, and shared
+theme options. \\
+\filename{examples/} &
+Filled example documents and mode wrappers used by the documentation build. \\
+\filename{testfiles/} &
+\pkg{l3build} regression and smoke tests. \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Installation}
+
+From a checkout, install the files into the local TeX tree with:
+
+\begin{lstlisting}
+l3build install
+\end{lstlisting}
+
+For one-off local testing without installing, put the source directory on
+\texttt{TEXINPUTS}:
+
+\begin{lstlisting}
+TEXINPUTS="$(pwd)/tex/latex/oritone//:" pdflatex examples/manuscript-white.tex
+\end{lstlisting}
+
+The package targets LaTeX2e from 2020-10-01 or newer. The examples and tests
+are expected to compile with pdfLaTeX, LuaLaTeX, and XeLaTeX, subject to the
+font notes in \Cref{sec:fonts}.
+
+\section{Core Package}
+
+The base package is loaded directly when a document only needs the palette,
+listing style, or plot style:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\usepackage[mode=white,accent=blue,listings,plots]{oritone}
+\end{lstlisting}
+
+\subsection{Options}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.24\linewidth}p{0.22\linewidth}p{0.43\linewidth}}
+\hline
+Option & Values & Effect \\
+\hline
+\opt{mode} & \opt{light}, \opt{dark}, \opt{white}, \opt{black} &
+Selects the active foreground, background, surface, and semantic color roles. \\
+\opt{accent} &
+\opt{auto}, \opt{orange}, \opt{sky}, \opt{green}, \opt{yellow}, \opt{blue},
+\opt{vermillion}, \opt{rose}, \opt{purple}, \opt{red}, \opt{amber},
+\opt{cyan} &
+Selects the accent hue used for links, rules, headings, and progress bars. \\
+\opt{listings} or \opt{julia} & Boolean &
+Loads \pkg{listings} and enables the shared Oritone listing styles. \\
+\opt{plots} or \opt{pgfplots} & Boolean &
+Loads \pkg{pgfplots} and enables the shared Oritone plot cycle and axis
+defaults. \\
+\hline
+\end{tabular}
+\end{center}
+
+The active mode and accent can also be changed after package load:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\oritonesetup{mode=dark,accent=amber}
+\end{lstlisting}
+
+\section{Fonts}
+\label{sec:fonts}
+
+Font loading is centralized in \pkg{oritone-fonts}. The default role profile is:
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.2\linewidth}p{0.32\linewidth}p{0.37\linewidth}}
+\hline
+Role & Default & Used for \\
+\hline
+Serif & STIX Two Text & Body text in manuscript and thesis documents. \\
+Math & STIX Two Math & Math in unicode engines; pdfLaTeX uses the STIX2
+package. \\
+Sans & Recursive Sans & CV body text, headings, title pages, headers, footers,
+Beamer text, labels, and other display roles. \\
+Mono & Recursive Mono & Listings, verbatim-like text, and code-oriented helper
+macros. \\
+\hline
+\end{tabular}
+\end{center}
+
+LuaLaTeX and XeLaTeX use \pkg{fontspec} and \pkg{unicode-math}. They first try
+installed Recursive and STIX names, then known static font file names, then
+fallback families.
+
+pdfLaTeX cannot load OpenType system fonts directly. For Recursive Sans and
+Recursive Mono it uses the optional external \pkg{recursive} package when
+\filename{recursive.sty} is installed. If that package is missing, Oritone
+warns and falls back to PT Sans and Inconsolata so the document remains
+compileable.
+
+\begin{lstlisting}
+git clone git@github.com:schmaeke/latex-recursive.git
+cd latex-recursive
+l3build install
+\end{lstlisting}
+
+Advanced users can load \pkg{oritone-fonts} directly with role overrides:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\usepackage[
+  serif=TeX Gyre Termes,
+  sans=Recursive Sans,
+  mono=Recursive Mono,
+  math=STIX Two Math,
+  sansscale=0.95,
+  monoscale=1.0
+]{oritone-fonts}
+\end{lstlisting}
+
+\section{Shared Design Roles}
+
+\pkg{oritone-design} is loaded by the classes and theme. It provides:
+
+\begin{itemize}
+  \item \cmd{oritoneApplyPageColors} for applying the active foreground and
+    background to the page.
+  \item \cmd{oritoneSetSemanticLinks} for semantic \pkg{hyperref} colors.
+  \item \cmd{oritoneRuledTitle} for title text framed by horizontal rules.
+  \item \cmd{oritonedefinecallouts} for \envname{oritonenote},
+    \envname{oritoneexample}, and \envname{oritonewarning}.
+  \item \cmd{oritonelabel} and \cmd{oritonecurrentlabel} for localized labels
+    such as page, abstract, keywords, declaration, and footer text.
+\end{itemize}
+
+Most documents should not load \pkg{oritone-design} directly. Use the classes
+or the Beamer theme unless you are building another Oritone-compatible frontend.
+
+\section{CV Class}
+
+The CV class is a compact, sans-serif \cls{article} derivative:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\documentclass[white,10pt,a4paper,language=english]{oritone-cv}
+
+\name{Ada}
+\surname{Sterling}
+\shortinfo{\maillink{ada@example.com}\sep\weblink{\faGlobe}{ada.dev}{ada.dev}}
+\phrase{I build reliable research software.}
+
+\begin{document}
+\cvhead
+\cvsection{Experience}
+\cvdatedentry{Example Laboratory}{2022--Present}{Built reusable workflows.}
+\end{document}
+\end{lstlisting}
+
+\subsection{CV Options}
+
+The class accepts \opt{light}, \opt{dark}, \opt{white}, \opt{black}, or
+\opt{mode=...}; \opt{accent=...}; \opt{language=...}; ordinary \cls{article}
+paper options; and \opt{10pt}, \opt{11pt}, or \opt{12pt}. If no paper or size is
+selected, it defaults to A4 and 10 pt.
+
+\subsection{CV Commands}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.35\linewidth}p{0.52\linewidth}}
+\hline
+Command & Purpose \\
+\hline
+\cmd{name}, \cmd{surname}, \cmd{shortinfo}, \cmd{phrase} &
+Store header metadata for \cmd{cvhead}. \\
+\cmd{cvhead} & Render the name, contact line, accent rule, and phrase. \\
+\cmd{cvsection} & Schedule a section heading. \\
+\cmd{cventry} & Entry with title and body. \\
+\cmd{cvdatedentry} & Entry with title, date/meta column, and body. \\
+\cmd{cvdatedentryshort} & Compact dated entry for projects, talks, skills, or
+short lists. \\
+\cmd{cvcustomentry} & Explicit title, right-side meta, and body. \\
+\cmd{maillink}, \cmd{phonelink}, \cmd{weblink}, \cmd{inlinelink} &
+Contact and inline link helpers. \\
+\cmd{sep}, \cmd{lastupdated}, \cmd{highlighted} &
+Inline separators and small text helpers. \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Manuscript Class}
+
+The manuscript class is intended for review drafts, internal reports, preprints,
+and short technical papers:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\documentclass[white,11pt,oneside,accent=blue]{oritone-manuscript}
+
+\title{A Reusable Scientific Report}
+\author[1]{Ada Example}
+\affil[1]{Example University}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The abstract spans the full text width and has no first-line indent.
+\end{abstract}
+
+\keywords{reports\keywordsep LaTeX\keywordsep reusable classes}
+
+\section{Introduction}
+Body text starts here.
+\end{document}
+\end{lstlisting}
+
+\subsection{Manuscript Options}
+
+The class accepts \opt{light}, \opt{dark}, \opt{white}, \opt{black}, or
+\opt{mode=...}; \opt{accent=...}; \opt{language=...}; \opt{oneside} or
+\opt{twoside}; common paper options; and \cls{extarticle} sizes from
+\opt{8pt} through \opt{20pt}. The default is A4, 10 pt, two-sided.
+
+\subsection{Manuscript Features}
+
+\begin{itemize}
+  \item Full-width abstract with localized sans-serif heading.
+  \item \cmd{keywords} helper with localized label and \cmd{keywordsep}
+    separator.
+  \item Optional \cmd{printcompileinfo} footer timestamp.
+  \item Dense sans-serif headings through \pkg{titlesec}.
+  \item \pkg{authblk} author and affiliation support.
+  \item \pkg{lineno}, \pkg{cleveref}, \pkg{hyperref}, \pkg{listings}, TikZ, and
+    semantic callouts.
+\end{itemize}
+
+\section{Thesis Class}
+
+The thesis class is a longer-form \cls{book} derivative with front matter,
+metadata helpers, bibliography helpers, declaration page, plots, listings, and
+two-sided running heads.
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\documentclass[english,white,bibtex]{oritone-thesis}
+
+\title{A Thesis Built with Oritone}
+\author{Ada Example}
+\date{\today}
+
+\universityName{Example University}
+\studyProgram{Computational Engineering}
+\desiredDegree{Master of Science}
+\firstExaminer{Prof. A. Example}{Computational Methods}
+\secondExaminer{Prof. B. Sample}{Software Systems}
+\thesisSubject{Thesis class demonstration}
+\thesisKeywords{LaTeX, thesis, Oritone}
+\thesisBibliographyResource{references}
+
+\begin{document}
+\frontmatter
+\maketitle
+\abstractChapter
+Abstract text.
+\tableofcontents
+\mainmatter
+\chapter{Introduction}
+\printThesisBibliography
+\declarationOfAcademicIntegrity
+\end{document}
+\end{lstlisting}
+
+\subsection{Thesis Options}
+
+The class accepts \opt{light}, \opt{dark}, \opt{white}, \opt{black}, or
+\opt{mode=...}; \opt{accent=...}; \opt{language=...}; \opt{oneside} or
+\opt{twoside}; common paper options; \opt{10pt}, \opt{11pt}, or \opt{12pt};
+\opt{draft} or \opt{final}; \opt{bibtex} or \opt{biblatex}; and
+\opt{colorlinks} or \opt{hidelinks}. The default is A4, 12 pt, two-sided,
+final, BibTeX, and color links.
+
+\subsection{Thesis Commands}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.36\linewidth}p{0.51\linewidth}}
+\hline
+Command & Purpose \\
+\hline
+\cmd{universityName}, \cmd{universityLogo}, \cmd{universityLogoWidth} &
+Institution title-page metadata. \\
+\cmd{studyProgram}, \cmd{desiredDegree} & Degree metadata. \\
+\cmd{firstExaminer}, \cmd{secondExaminer} & Examiner metadata. \\
+\cmd{thesisSubject}, \cmd{thesisKeywords} & PDF metadata. \\
+\cmd{abstractChapter} & Localized unnumbered abstract chapter. \\
+\cmd{thesisBibliographyStyle}, \cmd{thesisBibliographyResource},
+\cmd{printThesisBibliography} & BibTeX/BibLaTeX abstraction helpers. \\
+\cmd{declarationOfAcademicIntegrity} & Localized declaration page. \\
+\cmd{todo}, \cmd{linktt}, \cmd{intd}, \cmd{Assembly}, \cmd{bs} &
+Small thesis prose and math helpers. \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Beamer Theme}
+
+Use the theme with a regular Beamer document:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\documentclass[aspectratio=1610]{beamer}
+\usetheme[mode=light,accent=blue]{Oritone}
+
+\title{A Complete Oritone Deck}
+\author{Ada Example}
+\institute{Example Laboratory}
+\date{\today}
+\biglogo{example-image-a}
+\smalllogo{example-image-b}
+
+\begin{document}
+\maketitle
+\sectionframe{Overview}
+\begin{frame}{Motivation}
+  \begin{block}{Claim}
+    Shared package roles keep slides and documents consistent.
+  \end{block}
+\end{frame}
+\closingframe{Thank you}{example.com/oritone}{Questions}
+\end{document}
+\end{lstlisting}
+
+\subsection{Beamer Options}
+
+The theme accepts \opt{light}, \opt{dark}, \opt{white}, \opt{black}, or
+\opt{mode=...}; \opt{accent=...}; the accent shortcut options; and
+\opt{draftlogos} or \opt{showlogoplaceholders}. Missing logo placeholders are
+silent unless a placeholder option is enabled.
+
+\subsection{Beamer Commands}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.35\linewidth}p{0.52\linewidth}}
+\hline
+Command & Purpose \\
+\hline
+\cmd{titleframe} or \cmd{maketitle} & Render the Oritone title slide. \\
+\cmd{sectionframe} & Create a section divider slide. \\
+\cmd{standoutframe} & Create a slide without normal header/footer chrome and
+with a left accent rule. \\
+\cmd{closingframe} & Render a closing slide with title and optional logo. \\
+\cmd{slidebackground}, \cmd{noslidebackground} & Set or clear the optional
+curved slide background image. \\
+\cmd{coauthors}, \cmd{biglogo}, \cmd{smalllogo} & Presentation metadata helpers. \\
+\cmd{weblink} & Link helper for bare host names. \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Listings and Plots}
+
+Classes call \cmd{oritonelistingssetup} and select the shared
+\opt{oritone-listing} style automatically. The base style uses Recursive Mono
+or the configured mono fallback, a smaller code size, and the document's line
+spacing stretch.
+
+\begin{lstlisting}[language=Julia,caption={A compact listing.}]
+function residual(values)
+  return sum(abs, values)
+end
+\end{lstlisting}
+
+The thesis class and Beamer examples call \cmd{oritonepgfplotssetup} to install
+the shared axis and color-cycle defaults. Users of the base package can enable
+the same behavior with:
+
+\begin{lstlisting}[language={[LaTeX]TeX}]
+\usepackage[plots]{oritone}
+\oritonepgfplotssetup
+\end{lstlisting}
+
+\section{Examples and Tests}
+
+Build the documentation and example PDFs with:
+
+\begin{lstlisting}
+l3build doc
+\end{lstlisting}
+
+This creates the manual and the mode-specific example PDFs under
+\filename{build/doc}. The source examples are intentionally filled documents so
+title pages, headings, captions, listings, plots, tables, line numbers, links,
+headers, footers, and slide furniture are visible during review.
+
+Run the regression suite with:
+
+\begin{lstlisting}
+l3build check
+\end{lstlisting}
+
+The suite covers color mode switching, listings, plots, and smoke tests for the
+CV, manuscript, thesis, and Beamer public entry points.
+
+\section{Release Maintenance}
+
+Before tagging a release, run the checklist in \filename{RELEASE.md}. The
+short version is:
+
+\begin{lstlisting}
+l3build check
+l3build doc
+rsync -a build/doc/oritone.pdf doc/oritone.pdf
+\end{lstlisting}
+
+Screenshots in \filename{assets/screenshots} should be refreshed from the
+current generated example PDFs whenever the visual design changes.
+
+\end{document}

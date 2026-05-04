@@ -1,0 +1,22 @@
+\input{regression-test.tex}
+\documentclass{beamer}
+\usetheme[mode=white,accent=blue]{Oritone}
+\title{Oritone Beamer Smoke Test}
+\author{Ada Example}
+\institute{Example Laboratory}
+\date{2026-05-04}
+\begin{document}
+\START
+\TYPE{oritone beamer theme}
+\OMIT
+\maketitle
+\sectionframe{Overview}
+\begin{frame}{Public Surface}
+  \begin{block}{Block}
+    The Oritone Beamer theme compiles regular blocks.
+\end{block}
+\end{frame}
+\closingframe{Thank you}{example.com/oritone}{Questions}
+\TIMO
+\END
+\end{document}

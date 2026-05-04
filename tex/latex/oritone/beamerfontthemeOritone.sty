@@ -1,0 +1,45 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{beamerfontthemeOritone}[2026/05/04 v0.1.0 Oritone Beamer font theme]
+
+% Font role assignments for the Oritone Beamer theme. The actual font families
+% are loaded by oritone-fonts; this file maps Beamer elements to the sans display
+% family and sets the sizes used by title, section, frame, block, and footer
+% templates.
+
+% Prevent Beamer from replacing the selected sans family with its own defaults.
+\mode<presentation>{\beamer@suppressreplacementstrue}
+\RequirePackage{oritone-fonts}
+
+% Title page roles.
+\setbeamerfont{title}{family=\sffamily, size={\fontsize{25pt}{27pt}\selectfont}, series=\bfseries}
+\setbeamerfont{subtitle}{family=\sffamily, size={\fontsize{12pt}{14pt}\selectfont}, series=\normalfont}
+\setbeamerfont{date}{family=\sffamily, size={\fontsize{7.5pt}{9pt}\selectfont}, series=\bfseries}
+\setbeamerfont{author}{family=\sffamily, size=\large, series=\normalfont}
+\setbeamerfont{title page author primary}{parent=author, series=\bfseries}
+\setbeamerfont{institute}{family=\sffamily, size=\large, series=\normalfont}
+\setbeamerfont{title page logo warning}{family=\sffamily, size=\scriptsize, series=\normalfont}
+% Standout and closing-frame roles.
+\setbeamerfont{sectionframetitle}{family=\sffamily, size={\fontsize{28pt}{28pt}\selectfont}, series=\bfseries}
+\setbeamerfont{sectionframesubtitle}{family=\sffamily, size={\fontsize{18pt}{18pt}\selectfont}, series=\bfseries}
+\setbeamerfont{closing title}{family=\sffamily, size=\Huge, series=\bfseries}
+% Ordinary frame and footer roles.
+\setbeamerfont{normal text}{family=\sffamily}
+\setbeamerfont{framesection}{family=\sffamily, size=\huge, series=\bfseries}
+\setbeamerfont{frametitle}{family=\sffamily, size=\large, series=\normalfont}
+\setbeamerfont{footline}{family=\sffamily, size=\footnotesize, series=\normalfont}
+% List, table-of-contents, and block roles.
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+\setbeamerfont{section in toc}{family=\sffamily, size=\large, series=\bfseries}
+\setbeamerfont{subsection in toc}{family=\sffamily, series=\normalfont}
+\setbeamerfont{subsubsection in toc}{family=\sffamily, series=\itshape}
+\setbeamerfont*{block title}{family=\sffamily, series=\bfseries}
+\setbeamerfont*{block body}{family=\sffamily}
+\setbeamerfont*{block title example}{parent=block title}
+\setbeamerfont*{block body example}{parent=block body}
+\setbeamerfont*{block title alerted}{parent=block title}
+\setbeamerfont*{block body alerted}{parent=block body}
+
+\endinput

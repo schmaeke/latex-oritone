@@ -1,0 +1,72 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{beamerouterthemeOritone}[2026/05/04 v0.1.0 Oritone Beamer outer theme]
+
+% Outer theme: footer and progress bar. The inner theme handles the title page,
+% blocks, and frame titles; this file is limited to page-level slide chrome.
+
+\RequirePackage{oritonebeameroptions}
+\RequirePackage{oritone-design}
+
+% Width of the filled portion of the progress bar.
+\newdimen\oritonebeamer@progresswd
+
+% Localized word between current frame and total frame count.
+\newcommand{\oritonebeamer@pageword}{%
+  \oritonecurrentlabel{of}%
+}
+
+% Compute and draw a progress bar across the full paper width. The calculation
+% handles one-frame decks and clamps the width in case Beamer's frame counters
+% temporarily overshoot during reruns.
+\newcommand{\insertprogressbar}{%
+  \begingroup
+  \oritonebeamer@progresswd=0pt
+  \ifnum\numexpr\inserttotalframenumber\relax>1
+    \oritonebeamer@progresswd=\dimexpr\paperwidth/\numexpr\inserttotalframenumber\relax\relax
+    \multiply\oritonebeamer@progresswd by \numexpr\insertframenumber\relax
+    \ifdim\oritonebeamer@progresswd>\paperwidth
+      \oritonebeamer@progresswd=\paperwidth
+    \fi
+  \else
+    \ifnum\numexpr\insertframenumber\relax=1
+      \oritonebeamer@progresswd=\paperwidth
+    \fi
+  \fi
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.6ex, dp=0ex]{progressbar}
+    \leavevmode
+    {\color{bg}\rule{\paperwidth}{0.6ex}}%
+    \hspace*{-\paperwidth}%
+    {\color{fg}\rule{\oritonebeamer@progresswd}{0.6ex}}%
+  \end{beamercolorbox}%
+  \endgroup
+}
+
+% Two-line footer: progress bar, page count, author/institute/date/title, and
+% optional small logo. Missing-logo placeholders are controlled by the shared
+% Beamer option file.
+\setbeamertemplate{footline}{%
+  \insertprogressbar
+  \begin{beamercolorbox}[wd=\paperwidth, sep=1mm]{footline}%
+    \usebeamerfont{footline}%
+    \vspace*{0.8mm}%
+    \begin{tabular}{l @{\quad\quad} l @{\quad\quad} l}%
+      \strut\textbf{\insertframenumber}\space\oritonebeamer@pageword\space\textbf{\inserttotalframenumber} &
+      \insertauthor &
+      \insertinstitute \\
+      \strut & \insertdate & \inserttitle \\
+    \end{tabular}%
+    \hfill
+    \begin{tabular}{r}%
+      \@ifundefined{smalllogovalue}{%
+        \oritonebeamer@missinglogo{\string\smalllogo\{...\}}%
+      }{%
+        \includegraphics[height=4.5mm]{\smalllogovalue}\\
+      }%
+    \end{tabular}%
+    \vspace*{-1.5mm}%
+  \end{beamercolorbox}%
+}
+
+\endinput

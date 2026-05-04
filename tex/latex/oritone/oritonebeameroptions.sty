@@ -1,0 +1,49 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{oritonebeameroptions}[2026/05/04 v0.1.0 Oritone Beamer options]
+
+% Shared option state for all Oritone Beamer theme packages. Beamer loads color,
+% font, inner, outer, and main theme packages separately; this file keeps their
+% mode/accent/logo-placeholder options synchronized.
+
+% Defaults used when the user writes \usetheme{Oritone} without options.
+\providecommand{\oritonebeamer@mode}{light}
+\providecommand{\oritonebeamer@accent}{auto}
+\newif\iforitonebeamer@draftlogos
+
+% Simple setters used by \DeclareOptionBeamer below.
+\newcommand{\oritonebeamer@setmode}[1]{\def\oritonebeamer@mode{#1}}
+\newcommand{\oritonebeamer@setaccent}[1]{\def\oritonebeamer@accent{#1}}
+% Placeholder renderer for missing logos. It stays silent by default and only
+% prints visible boxes when draftlogos/showlogoplaceholders is enabled.
+\newcommand{\oritonebeamer@missinglogo}[1]{%
+  \iforitonebeamer@draftlogos
+    \colorbox{danger}{\color{background}\texttt{#1}}%
+  \fi
+}
+
+% Declare the same options for every Beamer theme component. Each component
+% calls this macro before \ProcessOptionsBeamer so load order does not matter.
+\newcommand{\oritonebeamer@declareoptions}{%
+  \DeclareOptionBeamer{light}{\oritonebeamer@setmode{light}}%
+  \DeclareOptionBeamer{dark}{\oritonebeamer@setmode{dark}}%
+  \DeclareOptionBeamer{white}{\oritonebeamer@setmode{white}}%
+  \DeclareOptionBeamer{black}{\oritonebeamer@setmode{black}}%
+  \DeclareOptionBeamer{mode}{\oritonebeamer@setmode{##1}}%
+  \DeclareOptionBeamer{accent}{\oritonebeamer@setaccent{##1}}%
+  \DeclareOptionBeamer{draftlogos}{\oritonebeamer@draftlogostrue}%
+  \DeclareOptionBeamer{showlogoplaceholders}{\oritonebeamer@draftlogostrue}%
+  \DeclareOptionBeamer{orange}{\oritonebeamer@setaccent{orange}}%
+  \DeclareOptionBeamer{sky}{\oritonebeamer@setaccent{sky}}%
+  \DeclareOptionBeamer{green}{\oritonebeamer@setaccent{green}}%
+  \DeclareOptionBeamer{yellow}{\oritonebeamer@setaccent{yellow}}%
+  \DeclareOptionBeamer{blue}{\oritonebeamer@setaccent{blue}}%
+  \DeclareOptionBeamer{vermillion}{\oritonebeamer@setaccent{vermillion}}%
+  \DeclareOptionBeamer{rose}{\oritonebeamer@setaccent{rose}}%
+  \DeclareOptionBeamer{purple}{\oritonebeamer@setaccent{rose}}%
+  \DeclareOptionBeamer{red}{\oritonebeamer@setaccent{red}}%
+  \DeclareOptionBeamer{amber}{\oritonebeamer@setaccent{amber}}%
+  \DeclareOptionBeamer{cyan}{\oritonebeamer@setaccent{cyan}}%
+}
+
+\endinput

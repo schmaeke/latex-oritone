@@ -1,0 +1,300 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{oritone-fonts}[2026/05/04 v0.1.0 Font roles for Oritone documents]
+
+% This package centralizes font selection for all Oritone classes and themes.
+% It keeps the class files free from engine-specific font loading details.
+%
+% The default profile is:
+%   serif: STIX Two Text
+%   math:  STIX Two Math
+%   sans:  Recursive Sans
+%   mono:  Recursive Mono
+%
+% pdfLaTeX cannot load system OpenType fonts directly, so Recursive support is
+% provided through the optional `recursive` package. If that package is missing,
+% the code falls back to PTSans and Inconsolata and emits package warnings.
+% LuaLaTeX and XeLaTeX use fontspec/unicode-math and try several installed
+% Recursive font names and file names before falling back.
+
+\RequirePackage{iftex}
+\RequirePackage{kvoptions}
+
+% User-facing options. Classes usually use the defaults, but documents can pass
+% through custom family names and scale factors when they load oritone-fonts
+% directly.
+\SetupKeyvalOptions{family=oritonefonts,prefix=oritonefonts@}
+\DeclareStringOption[STIX Two Text]{serif}
+\DeclareStringOption[STIX Two Math]{math}
+\DeclareStringOption[Recursive Sans]{sans}
+\DeclareStringOption[Recursive Mono]{mono}
+\DeclareStringOption[0.95]{sansscale}
+\DeclareStringOption[1.0]{monoscale}
+\ProcessKeyvalOptions*
+
+% Public accessors let diagnostics or downstream code inspect the selected font
+% names without knowing the kvoptions-generated internal macro names.
+\newcommand*\oritoneseriffontname{\oritonefonts@serif}
+\newcommand*\oritonemathfontname{\oritonefonts@math}
+\newcommand*\oritonesansfontname{\oritonefonts@sans}
+\newcommand*\oritonemonofontname{\oritonefonts@mono}
+
+% Keep warnings consistent across all fallback branches.
+\newcommand*\oritone@fontwarning[2]{%
+  \PackageWarning{oritone-fonts}{#1 not found. Using #2}%
+}
+
+% The Recursive defaults get special handling because the public font names
+% differ across pdfLaTeX support packages, system font installations, and static
+% OpenType file distributions.
+\def\oritone@recursive@sans{Recursive Sans}
+\def\oritone@recursive@mono{Recursive Mono}
+
+\newif\iforitone@recursivesans
+\newif\iforitone@recursivemono
+\newif\iforitone@fontselected
+
+% Flag whether the requested sans/mono names are the Recursive defaults. The
+% flags allow the pdfLaTeX and fontspec branches to avoid Recursive-specific
+% probing when a user supplied a different font family.
+\newcommand*\oritone@setrecursiveflags{%
+  \oritone@recursivesansfalse
+  \oritone@recursivemonofalse
+  \edef\oritone@requestedfont{\oritonefonts@sans}%
+  \ifx\oritone@requestedfont\oritone@recursive@sans
+    \oritone@recursivesanstrue
+  \fi
+  \edef\oritone@requestedfont{\oritonefonts@mono}%
+  \ifx\oritone@requestedfont\oritone@recursive@mono
+    \oritone@recursivemonotrue
+  \fi
+}
+
+% pdfLaTeX fallback packages. These are only loaded when Recursive is not
+% available or when the user selected a non-Recursive family under pdfLaTeX.
+\newcommand*\oritone@usepdfsansfallback{%
+  \RequirePackage[scaled=\oritonefonts@sansscale]{PTSans}%
+}
+
+\newcommand*\oritone@usepdfmonofallback{%
+  \RequirePackage[scaled=\oritonefonts@monoscale,mono]{inconsolata}%
+}
+
+% The pdfLaTeX Recursive package exposes scale macros. Set them after loading
+% the package so the Oritone sans/mono scale options still apply.
+\newcommand*\oritone@setrecursivepdfscales{%
+  \expandafter\let\csname RecursiveSansLinearStatic@scale\endcsname\oritonefonts@sansscale
+  \expandafter\let\csname RecursiveSansCasualStatic@scale\endcsname\oritonefonts@sansscale
+  \expandafter\let\csname RecursiveMonoLinearStatic@scale\endcsname\oritonefonts@monoscale
+  \expandafter\let\csname RecursiveMonoCasualStatic@scale\endcsname\oritonefonts@monoscale
+}
+
+% Load the pdfLaTeX Recursive package only once. Options select linear static
+% sans/mono families and the local font map supplied by the external package.
+\newcommand*\oritone@loadrecursivepdf[1]{%
+  \@ifpackageloaded{recursive}{}{%
+    \RequirePackage[#1]{recursive}%
+  }%
+  \oritone@setrecursivepdfscales
+}
+
+% fontspec helper: try a named sans family only if no previous probe succeeded.
+\newcommand*\oritone@trysetsansfont[1]{%
+  \iforitone@fontselected\else
+    \IfFontExistsTF{#1}{%
+      \setsansfont{#1}[Scale=\oritonefonts@sansscale]%
+      \oritone@fontselectedtrue
+    }{}%
+  \fi
+}
+
+% fontspec helper: try a named mono family only if no previous probe succeeded.
+\newcommand*\oritone@trysetmonofont[1]{%
+  \iforitone@fontselected\else
+    \IfFontExistsTF{#1}{%
+      \setmonofont{#1}[Scale=\oritonefonts@monoscale]%
+      \oritone@fontselectedtrue
+    }{}%
+  \fi
+}
+
+% fontspec helper: try a static font file family such as RecursiveSansLnrSt.otf
+% or RecursiveSansLnrSt.ttf, using the standard regular/italic/bold suffixes.
+\newcommand*\oritone@trysetsansfontfiles[2]{%
+  \iforitone@fontselected\else
+    \IfFontExistsTF{#1-Regular#2}{%
+      \setsansfont{#1}[
+        Extension=#2,
+        UprightFont=*-Regular,
+        ItalicFont=*-Italic,
+        BoldFont=*-Bold,
+        BoldItalicFont=*-BoldItalic,
+        Scale=\oritonefonts@sansscale
+      ]%
+      \oritone@fontselectedtrue
+    }{}%
+  \fi
+}
+
+% Same static-file probe as above, but for the mono family.
+\newcommand*\oritone@trysetmonofontfiles[2]{%
+  \iforitone@fontselected\else
+    \IfFontExistsTF{#1-Regular#2}{%
+      \setmonofont{#1}[
+        Extension=#2,
+        UprightFont=*-Regular,
+        ItalicFont=*-Italic,
+        BoldFont=*-Bold,
+        BoldItalicFont=*-BoldItalic,
+        Scale=\oritonefonts@monoscale
+      ]%
+      \oritone@fontselectedtrue
+    }{}%
+  \fi
+}
+
+\ifPDFTeX
+  % pdfLaTeX branch. STIX2 is available as a Type 1 package and becomes the
+  % serif family. Recursive is used through recursive.sty when possible; if it
+  % is missing, both sans and mono fall back to widely available Type 1 fonts.
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+  \RequirePackage{stix2}
+  \oritone@setrecursiveflags
+  \iforitone@recursivesans
+    \iforitone@recursivemono
+      \IfFileExists{recursive.sty}{%
+        \oritone@loadrecursivepdf{localmap,tabular,sans=linear,mono=linear}%
+      }{%
+        \oritone@fontwarning{recursive.sty}{PTSans and Inconsolata}%
+        \oritone@usepdfsansfallback
+        \oritone@usepdfmonofallback
+      }%
+    \else
+      \IfFileExists{recursive.sty}{%
+        \oritone@usepdfmonofallback
+        \oritone@loadrecursivepdf{localmap,tabular,sans=linear,nomono}%
+      }{%
+        \oritone@fontwarning{recursive.sty}{PTSans}%
+        \oritone@usepdfsansfallback
+        \oritone@usepdfmonofallback
+      }%
+    \fi
+  \else
+    \iforitone@recursivemono
+      \IfFileExists{recursive.sty}{%
+        \oritone@usepdfsansfallback
+        \oritone@loadrecursivepdf{localmap,tabular,nosans,mono=linear}%
+      }{%
+        \oritone@fontwarning{recursive.sty}{Inconsolata}%
+        \oritone@usepdfsansfallback
+        \oritone@usepdfmonofallback
+      }%
+    \else
+      \oritone@usepdfsansfallback
+      \oritone@usepdfmonofallback
+    \fi
+  \fi
+  \renewcommand*\rmdefault{stix2}
+\else
+  % LuaLaTeX/XeLaTeX branch. fontspec can load installed system fonts and local
+  % OpenType files directly, so the code tries the requested names first and
+  % then known file-family names before falling back to TeX Live fonts.
+  \RequirePackage{fontspec}
+  \defaultfontfeatures{Ligatures=TeX}
+
+  \IfFontExistsTF{\oritonefonts@serif}{%
+    \setmainfont{\oritonefonts@serif}
+  }{%
+    \IfFontExistsTF{STIXTwoText-Regular.otf}{%
+      \oritone@fontwarning{\oritonefonts@serif}{STIXTwoText OpenType files}%
+      \setmainfont{STIXTwoText}[
+        Extension=.otf,
+        UprightFont=*-Regular,
+        ItalicFont=*-Italic,
+        BoldFont=*-Bold,
+        BoldItalicFont=*-BoldItalic
+      ]%
+    }{%
+      \oritone@fontwarning{\oritonefonts@serif}{TeX Gyre Termes}%
+      \setmainfont{TeX Gyre Termes}%
+    }%
+  }%
+
+  \oritone@fontselectedfalse
+  \edef\oritone@requestedfont{\oritonefonts@sans}%
+  \ifx\oritone@requestedfont\oritone@recursive@sans
+    \oritone@trysetsansfont{Recursive Sans Linear Static}%
+    \oritone@trysetsansfont{Recursive Sn Lnr St}%
+    \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.otf}%
+    \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.ttf}%
+    \oritone@trysetsansfont{Recursive Sans Casual Static}%
+    \oritone@trysetsansfont{Recursive Sn Csl St}%
+    \oritone@trysetsansfont{\oritonefonts@sans}%
+  \else
+    \oritone@trysetsansfont{\oritonefonts@sans}%
+  \fi
+  \iforitone@fontselected\else
+    \IfFontExistsTF{PTSans-Regular-tlf-t1.tfm}{%
+      \oritone@fontwarning{\oritonefonts@sans}{PTSans package}%
+      \RequirePackage[scaled=\oritonefonts@sansscale]{PTSans}%
+    }{%
+      \oritone@fontwarning{\oritonefonts@sans}{Latin Modern Sans}%
+      \setsansfont{Latin Modern Sans}[Scale=\oritonefonts@sansscale]%
+    }%
+  \fi
+
+  \oritone@fontselectedfalse
+  \edef\oritone@requestedfont{\oritonefonts@mono}%
+  \ifx\oritone@requestedfont\oritone@recursive@mono
+    \oritone@trysetmonofont{Recursive Mono Linear Static}%
+    \oritone@trysetmonofont{Recursive Mn Lnr St}%
+    \oritone@trysetmonofontfiles{RecursiveMonoLnrSt}{.otf}%
+    \oritone@trysetmonofontfiles{RecursiveMonoLnrSt}{.ttf}%
+    \oritone@trysetmonofont{Recursive Mono Casual Static}%
+    \oritone@trysetmonofont{Recursive Mn Csl St}%
+    \oritone@trysetmonofont{\oritonefonts@mono}%
+  \else
+    \oritone@trysetmonofont{\oritonefonts@mono}%
+  \fi
+  \iforitone@fontselected\else
+    \IfFontExistsTF{Inconsolatazi4-Regular.otf}{%
+      \oritone@fontwarning{\oritonefonts@mono}{Inconsolatazi4 OpenType files}%
+      \setmonofont{Inconsolatazi4}[
+        Extension=.otf,
+        UprightFont=*-Regular,
+        BoldFont=*-Bold,
+        ItalicFont=*-Regular,
+        BoldItalicFont=*-Bold,
+        Scale=\oritonefonts@monoscale
+      ]%
+    }{%
+      \oritone@fontwarning{\oritonefonts@mono}{Latin Modern Mono}%
+      \setmonofont{Latin Modern Mono}[Scale=\oritonefonts@monoscale]%
+    }%
+  \fi
+
+  % Math is handled after text fonts. unicode-math needs amsmath available, and
+  % STIX Two Math keeps the visual language aligned with the default serif.
+  \@ifpackageloaded{amsmath}{}{\RequirePackage{amsmath}}%
+  \RequirePackage{unicode-math}
+  \IfFontExistsTF{\oritonefonts@math}{%
+    \setmathfont{\oritonefonts@math}
+  }{%
+    \IfFontExistsTF{STIXTwoMath-Regular.otf}{%
+      \oritone@fontwarning{\oritonefonts@math}{STIXTwoMath OpenType file}%
+      \setmathfont{STIXTwoMath-Regular.otf}%
+    }{%
+      \oritone@fontwarning{\oritonefonts@math}{Latin Modern Math}%
+      \setmathfont{Latin Modern Math}%
+    }%
+  }%
+\fi
+
+% Placeholder for future named font profiles. It currently warns instead of
+% silently doing nothing so users can spot unsupported configuration requests.
+\newcommand*\oritoneusefontprofile[1]{%
+  \PackageWarning{oritone-fonts}{Font profile '#1' is not defined in this release}%
+}
+
+\endinput

@@ -1,0 +1,33 @@
+\input{regression-test.tex}
+\documentclass[white,oneside,bibtex]{oritone-thesis}
+\title{Oritone Thesis Smoke Test}
+\author{Ada Example}
+\date{2026-05-04}
+\universityName{Example University}
+\studyProgram{Computational Engineering}
+\desiredDegree{Master of Science}
+\firstExaminer{Prof. A. Example}{Methods}
+\secondExaminer{Prof. B. Example}{Systems}
+\thesisSubject{Smoke test}
+\thesisKeywords{Oritone, thesis}
+\begin{document}
+\START
+\TYPE{oritone thesis class}
+\OMIT
+\frontmatter
+\maketitle
+\abstractChapter
+This abstract checks thesis front matter.
+\mainmatter
+\chapter{Introduction}
+\section{Scope}
+The thesis class should compile chapters, callouts, and listings.
+\begin{oritoneexample}[Example]
+The shared example callout is available.
+\end{oritoneexample}
+\begin{lstlisting}[language=Julia]
+value() = 1
+\end{lstlisting}
+\TIMO
+\END
+\end{document}

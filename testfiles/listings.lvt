@@ -1,0 +1,30 @@
+\input{regression-test.tex}
+\documentclass{article}
+\usepackage{iftex}
+\ifPDFTeX
+\else
+  \ifLuaTeX
+    \usepackage[T1]{fontenc}
+    \renewcommand*\ttdefault{cmtt}
+  \else
+    \usepackage{fontspec}
+    \setmonofont{Inconsolatazi4}[
+      Extension=.otf,
+      UprightFont=*-Regular,
+      BoldFont=*-Bold,
+      ItalicFont=*-Regular,
+      BoldItalicFont=*-Bold
+    ]
+  \fi
+\fi
+\usepackage[listings]{oritone}
+\begin{document}
+\START
+\TYPE{oritone listings}
+\begin{lstlisting}[style=oritone-julia]
+function f(x)
+  return x + 1
+end
+\end{lstlisting}
+\END
+\end{document}

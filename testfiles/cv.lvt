@@ -1,0 +1,18 @@
+\input{regression-test.tex}
+\documentclass[white]{oritone-cv}
+\name{Ada}
+\surname{Example}
+\shortinfo{\maillink{ada@example.com}\sep\weblink{\faGlobe}{example.com}{example.com}}
+\phrase{Compact public CV smoke test.}
+\begin{document}
+\START
+\TYPE{oritone cv class}
+\OMIT
+\cvhead
+\cvsection{Experience}
+\cvdatedentry{Example Laboratory}{2026}{Maintained reusable document tools.}
+\cvsection{Skills}
+\cventry{Typesetting}{LaTeX\sep Documentation\sep CI}
+\TIMO
+\END
+\end{document}

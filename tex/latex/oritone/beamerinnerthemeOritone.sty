@@ -1,0 +1,157 @@
+% SPDX-License-Identifier: MIT
+\NeedsTeXFormat{LaTeX2e}[2020-10-01]
+\ProvidesPackage{beamerinnerthemeOritone}[2026/05/04 v0.1.0 Oritone Beamer inner theme]
+
+% Inner theme: margins, block templates, frame titles, bullets, title page, and
+% caption styling. It depends on the shared design package for measurements and
+% labels, while the color/font themes provide the Beamer role values consumed
+% here.
+
+\RequirePackage{oritonebeameroptions}
+\RequirePackage{oritone-design}
+\RequirePackage{fontawesome5}
+\RequirePackage{caption}
+\RequirePackage[skins]{tcolorbox}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+% Tight slide margins and no default Beamer navigation symbols.
+\setbeamersize{text margin left=5mm, text margin right=5mm}
+\setbeamertemplate{navigation symbols}{}
+
+% Shared tcolorbox-backed block renderer. The two arguments are the Beamer color
+% role names for the block title and body, which lets normal/example/alerted
+% blocks share geometry while using different semantic colors.
+\newcommand{\oritonebeamer@blockbegin}[2]{%
+  \par\vskip\medskipamount%
+  \usebeamercolor{#2}%
+  \colorlet{oritoneblockbackground}{bg}%
+  \colorlet{oritoneblocktext}{fg}%
+  \usebeamercolor{#1}%
+  \colorlet{oritoneblockrule}{fg}%
+  \colorlet{oritoneblocktitle}{fg}%
+  \begin{tcolorbox}[
+    enhanced,
+    frame hidden,
+    sharp corners,
+    boxrule=0pt,
+    colback=oritoneblockbackground,
+    coltext=oritoneblocktext,
+    borderline west={\oritoneblockrulewidth}{0mm}{oritoneblockrule},
+    left=\oritoneblockxsep,
+    right=\oritoneblockxsep,
+    top=\oritoneblockysep,
+    bottom=\oritoneblockysep,
+    boxsep=0mm,
+    before skip=0pt,
+    after skip=0pt
+  ]
+    \ifx\insertblocktitle\@empty\else
+      {\usebeamerfont*{#1}\color{oritoneblocktitle}\insertblocktitle\par}%
+      \vspace{0.6mm}%
+    \fi
+    \usebeamerfont{#2}%
+    \color{oritoneblocktext}%
+}
+\newcommand{\oritonebeamer@blockend}{%
+  \end{tcolorbox}%
+  \vskip\smallskipamount%
+}
+% Install the shared block renderer for all Beamer block variants.
+\setbeamertemplate{block begin}{\oritonebeamer@blockbegin{block title}{block body}}
+\setbeamertemplate{block end}{\oritonebeamer@blockend}
+\setbeamertemplate{block example begin}{\oritonebeamer@blockbegin{block title example}{block body example}}
+\setbeamertemplate{block example end}{\oritonebeamer@blockend}
+\setbeamertemplate{block alerted begin}{\oritonebeamer@blockbegin{block title alerted}{block body alerted}}
+\setbeamertemplate{block alerted end}{\oritonebeamer@blockend}
+
+% Frame title template. The current section is shown as a large accent heading,
+% with the frame title below it in the secondary title role.
+\setbeamertemplate{frametitle}{%
+  {%
+    \usebeamercolor{framesection}%
+    \color{fg}%
+    \usebeamerfont{framesection}%
+    \strut\insertsectionhead \\[-0.8mm]%
+  }%
+  {%
+    \usebeamercolor{frametitle}%
+    \color{fg}%
+    \usebeamerfont{frametitle}%
+    \strut\insertframetitle
+  }%
+}
+
+% TOC, list, and bibliography glyphs.
+\setbeamertemplate{section in toc}{\inserttocsectionnumber.\enspace\inserttocsection}
+\setbeamertemplate{subsection in toc}{\enspace\enspace\textbullet\enspace\inserttocsubsection\\}
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{itemize item}{\small\faChevronCircleRight}
+\setbeamertemplate{itemize subitem}{\small\faChevronRight}
+\setbeamertemplate{itemize subsubitem}{\small\faMinus}
+\setbeamertemplate{bibliography item}{\usebeamercolor[fg]{bibliography item}\faQuoteRight}
+
+% Title page. The content is positioned with overlay TikZ so it is independent
+% of Beamer's normal text block and always aligns to the page edges.
+\newcommand{\oritonebeamer@titlepagecontent}{%
+  \begingroup
+  \begin{tikzpicture}[remember picture, overlay]
+    \usebeamercolor{title page accent}%
+    \fill[fg] (current page.south west) rectangle ($(current page.south west) + (1.4mm,\paperheight)$);
+    \node[anchor=north west, inner sep=0pt] at ($(current page.north west) + (8mm,-13mm)$) {%
+      \@ifundefined{biglogovalue}{%
+        {\usebeamerfont{title page logo warning}\usebeamercolor{title page logo warning}\oritonebeamer@missinglogo{\string\biglogo\{...\}}}%
+      }{%
+        \includegraphics[height=11mm]{\biglogovalue}%
+      }%
+    };
+    \node[anchor=north west, inner sep=0pt] at ($(current page.north west) + (8mm,-31mm)$) {%
+      {\usebeamerfont{date}\usebeamercolor[fg]{date}\MakeUppercase{\insertdate}}%
+    };
+    \node[anchor=west, inner sep=0pt, text width=0.62\paperwidth] at ($(current page.west) + (8mm,-4mm)$) {%
+      \raggedright
+      {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}%
+      \vspace{2.5mm}%
+      \ifx\insertsubtitle\@empty\else
+        {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+      \fi
+    };
+    \node[anchor=south west, inner sep=0pt, text width=0.52\paperwidth] at ($(current page.south west) + (8mm,10mm)$) {%
+      \raggedright
+      {\usebeamerfont{author}\usebeamercolor[fg]{author}%
+        \@ifundefined{coauthorsvalue}{\insertauthor}{%
+          {\usebeamerfont{title page author primary}\insertauthor},\ \coauthorsvalue%
+        }\par}%
+      \vspace{1.8mm}%
+      {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}%
+    };
+  \end{tikzpicture}
+  \endgroup
+}
+\setbeamertemplate{title page}{\oritonebeamer@titlepagecontent}
+
+% Public title-frame helper. Outside a frame, \maketitle creates a plain title
+% frame; inside an existing frame, it emits just the title page content.
+\newcommand{\titleframe}{%
+  \begin{frame}[plain,noframenumbering]
+    \titlepage
+    \null
+  \end{frame}
+}
+\renewcommand{\maketitle}{%
+  \ifbeamer@inframe
+    \titlepage
+  \else
+    \titleframe
+  \fi
+}
+
+% Beamer captions use the same sans bold label convention as the document
+% classes, but at a smaller presentation-appropriate size.
+\captionsetup{
+  labelfont={sf,bf,small},
+  font={small},
+  justification=raggedright
+}
+
+\endinput
