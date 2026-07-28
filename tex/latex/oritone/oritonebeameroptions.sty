@@ -9,11 +9,13 @@
 % Defaults used when the user writes \usetheme{Oritone} without options.
 \providecommand{\oritonebeamer@mode}{light}
 \providecommand{\oritonebeamer@accent}{auto}
+\providecommand{\oritonebeamer@accentshade}{normal}
 \newif\iforitonebeamer@draftlogos
 
 % Simple setters used by \DeclareOptionBeamer below.
 \newcommand{\oritonebeamer@setmode}[1]{\def\oritonebeamer@mode{#1}}
 \newcommand{\oritonebeamer@setaccent}[1]{\def\oritonebeamer@accent{#1}}
+\newcommand{\oritonebeamer@setaccentshade}[1]{\def\oritonebeamer@accentshade{#1}}
 % Placeholder renderer for missing logos. It stays silent by default and only
 % prints visible boxes when draftlogos/showlogoplaceholders is enabled.
 \newcommand{\oritonebeamer@missinglogo}[1]{%
@@ -31,6 +33,7 @@
   \DeclareOptionBeamer{black}{\oritonebeamer@setmode{black}}%
   \DeclareOptionBeamer{mode}{\oritonebeamer@setmode{##1}}%
   \DeclareOptionBeamer{accent}{\oritonebeamer@setaccent{##1}}%
+  \DeclareOptionBeamer{accentshade}{\oritonebeamer@setaccentshade{##1}}%
   \DeclareOptionBeamer{draftlogos}{\oritonebeamer@draftlogostrue}%
   \DeclareOptionBeamer{showlogoplaceholders}{\oritonebeamer@draftlogostrue}%
   \DeclareOptionBeamer{orange}{\oritonebeamer@setaccent{orange}}%

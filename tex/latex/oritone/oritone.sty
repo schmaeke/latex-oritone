@@ -27,6 +27,7 @@
 \SetupKeyvalOptions{family=oritone,prefix=oritone@}
 \DeclareStringOption[light]{mode}
 \DeclareStringOption[auto]{accent}
+\DeclareStringOption[normal]{accentshade}
 \DeclareBoolOption{listings}
 \DeclareBoolOption{plots}
 \DeclareVoidOption{light}{\def\oritone@mode{light}}
@@ -54,6 +55,7 @@
 % links, and plots see the updated roles.
 \define@key{oritone}{mode}{\oritone@selectmode{#1}}
 \define@key{oritone}{accent}{\oritone@selectaccent{#1}}
+\define@key{oritone}{accentshade}{\oritone@selectaccentshade{#1}}
 \newcommand*\oritonesetup[1]{%
   \setkeys{oritone}{#1}%
   \oritone@applymode
@@ -281,26 +283,58 @@
   \colorlet{listingemphasis}{warning}%
   \colorlet{listingrule}{border}%
   \colorlet{listingbackground}{surface}%
+  % Qualitative plot colors track the Okabe-Ito colorblind-safe palette using the
+  % closest Oritone hue for each entry: blue, vermillion, bluish green, reddish
+  % purple, sky blue, orange, and yellow. `plotskyblue` and `plotgold` are kept
+  % as aliases for older documents.
   \colorlet{plotblue}{blue}%
-  \colorlet{plotorange}{orange}%
+  \colorlet{plotvermillion}{vermillion}%
   \colorlet{plotgreen}{green}%
-  \colorlet{plotgold}{amber}%
   \colorlet{plotpurple}{purple}%
-  \colorlet{plotskyblue}{sky}%
+  \colorlet{plotsky}{sky}%
+  \colorlet{plotorange}{orange}%
   \colorlet{plotyellow}{yellow}%
   \colorlet{plotgray}{text-muted}%
+  \colorlet{plotskyblue}{sky}%
+  \colorlet{plotgold}{amber}%
 }
 
-% Accent colors are computed from one base hue. The extra light/dark variants
-% make it possible to use the same accent in title rules, callout borders, link
-% colors, and Beamer progress bars while preserving contrast in every mode.
+% Accent shade lets a document deepen or soften the main accent without changing
+% the selected hue. Each name expands to a color-expression suffix appended to
+% the base hue: `dark`/`darker` blend it toward the foreground text color (useful
+% when the default accent looks too bright on the light and white modes), while
+% `light`/`lighter` blend it toward the page background. `normal` (the default)
+% and `default` leave the hue untouched.
+\def\oritone@accentshade@normal{}
+\def\oritone@accentshade@default{}
+\def\oritone@accentshade@dark{!80!foreground}
+\def\oritone@accentshade@darker{!62!foreground}
+\def\oritone@accentshade@light{!80!background}
+\def\oritone@accentshade@lighter{!62!background}
+% Store the requested shade. Validation is delayed until the accent is applied,
+% mirroring how the accent hue itself is resolved.
+\newcommand*\oritone@selectaccentshade[1]{%
+  \edef\oritone@accentshade{#1}%
+}
+
+% Accent colors are computed from one base hue. The requested accent shade is
+% applied to that hue first, then the hover, link, and light/dark ramp variants
+% are all derived from the shaded accent. This keeps the whole accent family --
+% title rules, callout borders, links, Beamer progress bars, headings, and the
+% footer bar -- shifting together so a shaded accent stays consistent in every
+% mode.
 \newcommand*\oritone@setaccentcolors[1]{%
-  \colorlet{accent}{#1}%
-  \colorlet{accent-hover}{#1!86!foreground}%
-  \colorlet{accent-verylight}{#1!18!background}%
-  \colorlet{accent-light}{#1!46!background}%
-  \colorlet{accent-dark}{#1!70!foreground}%
-  \colorlet{accent-verydark}{#1!86!foreground}%
+  \@ifundefined{oritone@accentshade@\oritone@accentshade}{%
+    \PackageWarning{oritone}{Unknown accentshade '\oritone@accentshade'. Using 'normal'}%
+    \def\oritone@accentshade{normal}%
+  }{}%
+  \edef\oritone@accentexpr{#1\csname oritone@accentshade@\oritone@accentshade\endcsname}%
+  \colorlet{accent}{\oritone@accentexpr}%
+  \colorlet{accent-hover}{accent!86!foreground}%
+  \colorlet{accent-verylight}{accent!18!background}%
+  \colorlet{accent-light}{accent!46!background}%
+  \colorlet{accent-dark}{accent!70!foreground}%
+  \colorlet{accent-verydark}{accent!86!foreground}%
   \colorlet{linkcolor}{accent}%
 }
 % User-facing accent names are aliases because some design terms changed over
@@ -613,16 +647,16 @@
     \pgfplotscreateplotcyclelist{oritone markers}{%
       {plotblue, line width=0.9pt, mark=*, mark size=2.2pt,
         mark options={solid, draw=plotblue!55!black, fill=plotblue, line width=0.35pt}}\\%
-      {plotorange, line width=0.9pt, mark=square*, mark size=2.2pt,
-        mark options={solid, draw=plotorange!55!black, fill=plotorange, line width=0.35pt}}\\%
+      {plotvermillion, line width=0.9pt, mark=square*, mark size=2.2pt,
+        mark options={solid, draw=plotvermillion!55!black, fill=plotvermillion, line width=0.35pt}}\\%
       {plotgreen, line width=0.9pt, mark=triangle*, mark size=2.3pt,
         mark options={solid, draw=plotgreen!55!black, fill=plotgreen, line width=0.35pt}}\\%
-      {plotgold, line width=0.9pt, mark=diamond*, mark size=2.4pt,
-        mark options={solid, draw=plotgold!55!black, fill=plotgold, line width=0.35pt}}\\%
-      {plotpurple, line width=0.9pt, mark=pentagon*, mark size=2.3pt,
+      {plotpurple, line width=0.9pt, mark=diamond*, mark size=2.4pt,
         mark options={solid, draw=plotpurple!55!black, fill=plotpurple, line width=0.35pt}}\\%
-      {plotskyblue, line width=0.9pt, mark=*, mark size=2.2pt,
-        mark options={solid, draw=plotskyblue!55!black, fill=plotskyblue, line width=0.35pt}}\\%
+      {plotsky, line width=0.9pt, mark=pentagon*, mark size=2.3pt,
+        mark options={solid, draw=plotsky!55!black, fill=plotsky, line width=0.35pt}}\\%
+      {plotorange, line width=0.9pt, mark=*, mark size=2.2pt,
+        mark options={solid, draw=plotorange!55!black, fill=plotorange, line width=0.35pt}}\\%
       {plotyellow, line width=0.9pt, mark=square*, mark size=2.2pt,
         mark options={solid, draw=plotyellow!55!black, fill=plotyellow, line width=0.35pt}}\\%
       {plotgray, line width=0.9pt, mark=triangle*, mark size=2.3pt,
@@ -630,11 +664,11 @@
     }%
     \pgfplotscreateplotcyclelist{oritone no markers}{%
       {plotblue, line width=0.9pt, mark=none}\\%
-      {plotorange, line width=0.9pt, mark=none}\\%
+      {plotvermillion, line width=0.9pt, mark=none}\\%
       {plotgreen, line width=0.9pt, mark=none}\\%
-      {plotgold, line width=0.9pt, mark=none}\\%
       {plotpurple, line width=0.9pt, mark=none}\\%
-      {plotskyblue, line width=0.9pt, mark=none}\\%
+      {plotsky, line width=0.9pt, mark=none}\\%
+      {plotorange, line width=0.9pt, mark=none}\\%
       {plotyellow, line width=0.9pt, mark=none}\\%
       {plotgray, line width=0.9pt, mark=none}\\%
     }%

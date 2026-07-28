@@ -93,7 +93,7 @@
   \LoadClass[\oritonemanuscript@paper,\oritonemanuscript@fontsize,oneside]{extarticle}
 \fi
 
-% Dependencies. oritone-fonts installs Recursive/STIX roles, oritone installs
+% Dependencies. oritone-fonts installs STIX/Roboto/Recursive roles, oritone installs
 % semantic colors, and oritone-design installs shared labels, title rules, and
 % callout helpers.
 \RequirePackage{oritone-fonts}

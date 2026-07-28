@@ -58,9 +58,10 @@ TEXINPUTS="$(pwd)/tex/latex/oritone//:" pdflatex examples/manuscript-white.tex
 ```
 
 LuaLaTeX and XeLaTeX can load installed OpenType fonts directly. pdfLaTeX uses
-the optional external `recursive` package for Recursive Sans and Recursive Mono.
-If `recursive.sty` is not installed, Oritone emits a package warning and falls
-back to PT Sans and Inconsolata so documents still compile.
+the `roboto` package for Roboto Condensed and the optional external `recursive`
+package for Recursive Mono. If a support package is not installed, Oritone emits
+a package warning and falls back to PT Sans and Inconsolata so documents still
+compile.
 
 ## Color Modes
 
@@ -82,11 +83,20 @@ Examples:
 Accent names are `auto`, `orange`, `sky`, `green`, `yellow`, `blue`,
 `vermillion`, `rose`, `purple`, `red`, `amber`, and `cyan`.
 
+The `accentshade` option shades the whole accent family toward the foreground
+text (`dark`, `darker`) or the page background (`light`, `lighter`) — links,
+rules, headings, the footer bar, and progress bars shift together — which helps
+when the default accent looks too bright on the light and white modes:
+
+```tex
+\usetheme[mode=white,accent=blue,accentshade=dark]{Oritone}
+```
+
 ## Fonts
 
 The default font roles are centralized in `oritone-fonts.sty`:
 
-- Sans: Recursive Sans.
+- Sans: Roboto Condensed.
 - Serif: STIX Two.
 - Math: STIX Two Math.
 - Mono: Recursive Mono.

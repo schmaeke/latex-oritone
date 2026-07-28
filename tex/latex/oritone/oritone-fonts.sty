@@ -8,14 +8,15 @@
 % The default profile is:
 %   serif: STIX Two Text
 %   math:  STIX Two Math
-%   sans:  Recursive Sans
+%   sans:  Roboto Condensed
 %   mono:  Recursive Mono
 %
-% pdfLaTeX cannot load system OpenType fonts directly, so Recursive support is
-% provided through the optional `recursive` package. If that package is missing,
-% the code falls back to PTSans and Inconsolata and emits package warnings.
-% LuaLaTeX and XeLaTeX use fontspec/unicode-math and try several installed
-% Recursive font names and file names before falling back.
+% pdfLaTeX cannot load system OpenType fonts directly, so Roboto Condensed is
+% provided through the `roboto` package and Recursive Mono through the optional
+% external `recursive` package. If either support package is missing, the code
+% falls back to PTSans and Inconsolata and emits package warnings. LuaLaTeX and
+% XeLaTeX use fontspec/unicode-math and try several installed font names and
+% file names before falling back.
 
 \RequirePackage{iftex}
 \RequirePackage{kvoptions}
@@ -26,7 +27,7 @@
 \SetupKeyvalOptions{family=oritonefonts,prefix=oritonefonts@}
 \DeclareStringOption[STIX Two Text]{serif}
 \DeclareStringOption[STIX Two Math]{math}
-\DeclareStringOption[Recursive Sans]{sans}
+\DeclareStringOption[Roboto Condensed]{sans}
 \DeclareStringOption[Recursive Mono]{mono}
 \DeclareStringOption[0.95]{sansscale}
 \DeclareStringOption[1.0]{monoscale}
@@ -44,25 +45,32 @@
   \PackageWarning{oritone-fonts}{#1 not found. Using #2}%
 }
 
-% The Recursive defaults get special handling because the public font names
+% The bundled defaults get special handling because their public font names
 % differ across pdfLaTeX support packages, system font installations, and static
 % OpenType file distributions.
 \def\oritone@recursive@sans{Recursive Sans}
 \def\oritone@recursive@mono{Recursive Mono}
+\def\oritone@roboto@sans{Roboto Condensed}
 
 \newif\iforitone@recursivesans
 \newif\iforitone@recursivemono
+\newif\iforitone@robotosans
 \newif\iforitone@fontselected
 
-% Flag whether the requested sans/mono names are the Recursive defaults. The
-% flags allow the pdfLaTeX and fontspec branches to avoid Recursive-specific
-% probing when a user supplied a different font family.
-\newcommand*\oritone@setrecursiveflags{%
+% Flag which bundled default the requested sans/mono names match. The flags let
+% the pdfLaTeX and fontspec branches pick the right support package (roboto or
+% recursive) and skip that probing entirely when a user supplied a different
+% font family.
+\newcommand*\oritone@setfontflags{%
   \oritone@recursivesansfalse
   \oritone@recursivemonofalse
+  \oritone@robotosansfalse
   \edef\oritone@requestedfont{\oritonefonts@sans}%
   \ifx\oritone@requestedfont\oritone@recursive@sans
     \oritone@recursivesanstrue
+  \fi
+  \ifx\oritone@requestedfont\oritone@roboto@sans
+    \oritone@robotosanstrue
   \fi
   \edef\oritone@requestedfont{\oritonefonts@mono}%
   \ifx\oritone@requestedfont\oritone@recursive@mono
@@ -78,6 +86,52 @@
 
 \newcommand*\oritone@usepdfmonofallback{%
   \RequirePackage[scaled=\oritonefonts@monoscale,mono]{inconsolata}%
+}
+
+% pdfLaTeX Roboto Condensed. Under pdfLaTeX the roboto package exposes the
+% condensed cut not as a separate family but as font series `c' (medium) and
+% `bc' (bold) within its Roboto sans family. Its `condensed' option would make
+% that the document-wide default series, which does not survive every way a
+% class reaches the sans font (article classes go through \sffamily, but beamer
+% makes \sfdefault the document family and typesets the body through
+% \seriesdefault) and repoints the fontaxes series axis so the default family is
+% probed at the undefined condensed series. So we load roboto WITHOUT that
+% option and instead synthesise a family, RobotoLFCond, whose medium/bold
+% weights alias the condensed shapes -- which the roboto font definitions
+% provide regardless of the option -- and point \sfdefault at it. Roboto
+% Condensed then becomes the intrinsic default of the sans family and renders
+% whether a class uses \sffamily, \normalfont, or \sfdefault as the document
+% family, while the STIX serif body and \seriesdefault stay medium.
+\newcommand*\oritone@robotobase{}
+% Alias the roboto source series #3 (c or bc) into RobotoLFCond under target
+% series #2 (m, b, bx) in encoding #1, for the upright/italic/slanted shapes
+% that both the T1 and TS1 condensed cuts provide.
+\newcommand*\oritone@condsanssub[3]{%
+  \DeclareFontShape{#1}{RobotoLFCond}{#2}{n}{<->ssub*\oritone@robotobase/#3/n}{}%
+  \DeclareFontShape{#1}{RobotoLFCond}{#2}{it}{<->ssub*\oritone@robotobase/#3/it}{}%
+  \DeclareFontShape{#1}{RobotoLFCond}{#2}{sl}{<->ssub*\oritone@robotobase/#3/sl}{}%
+}
+% Small-caps shapes exist only in the T1 text encoding.
+\newcommand*\oritone@condsanssc[2]{%
+  \DeclareFontShape{T1}{RobotoLFCond}{#1}{sc}{<->ssub*\oritone@robotobase/#2/sc}{}%
+  \DeclareFontShape{T1}{RobotoLFCond}{#1}{scit}{<->ssub*\oritone@robotobase/#2/scit}{}%
+  \DeclareFontShape{T1}{RobotoLFCond}{#1}{scsl}{<->ssub*\oritone@robotobase/#2/scsl}{}%
+}
+\newcommand*\oritone@usepdfrobotosans{%
+  \RequirePackage[scaled=\oritonefonts@sansscale]{roboto}%
+  \edef\oritone@robotobase{\sfdefault}%
+  \DeclareFontFamily{T1}{RobotoLFCond}{}%
+  \DeclareFontFamily{TS1}{RobotoLFCond}{}%
+  \oritone@condsanssub{T1}{m}{c}\oritone@condsanssc{m}{c}%
+  \oritone@condsanssub{T1}{b}{bc}\oritone@condsanssc{b}{bc}%
+  \oritone@condsanssub{T1}{bx}{bc}\oritone@condsanssc{bx}{bc}%
+  \oritone@condsanssub{TS1}{m}{c}%
+  \oritone@condsanssub{TS1}{b}{bc}%
+  \oritone@condsanssub{TS1}{bx}{bc}%
+  \renewcommand*\sfdefault{RobotoLFCond}%
+  \def\mdseries@sf{m}%
+  \def\bfseries@sf{b}%
+  \def\seriesdefault{\mddefault}%
 }
 
 % The pdfLaTeX Recursive package exposes scale macros. Set them after loading
@@ -155,45 +209,63 @@
 
 \ifPDFTeX
   % pdfLaTeX branch. STIX2 is available as a Type 1 package and becomes the
-  % serif family. Recursive is used through recursive.sty when possible; if it
-  % is missing, both sans and mono fall back to widely available Type 1 fonts.
+  % serif family. The sans and mono roles are selected independently: Roboto
+  % Condensed loads through the roboto package, Recursive through the optional
+  % recursive package, and each role falls back to a widely available Type 1
+  % font (PTSans or Inconsolata) when its support package is missing.
   \RequirePackage[T1]{fontenc}
   \RequirePackage[utf8]{inputenc}
   \RequirePackage{stix2}
-  \oritone@setrecursiveflags
+  \oritone@setfontflags
+  % recursive.sty can serve both the sans and mono roles, so require it once
+  % with a combined option list covering whichever roles still request the
+  % Recursive defaults.
   \iforitone@recursivesans
     \iforitone@recursivemono
-      \IfFileExists{recursive.sty}{%
-        \oritone@loadrecursivepdf{localmap,tabular,sans=linear,mono=linear}%
-      }{%
-        \oritone@fontwarning{recursive.sty}{PTSans and Inconsolata}%
-        \oritone@usepdfsansfallback
-        \oritone@usepdfmonofallback
-      }%
+      \def\oritone@recursivepdfopts{localmap,tabular,sans=linear,mono=linear}%
     \else
-      \IfFileExists{recursive.sty}{%
-        \oritone@usepdfmonofallback
-        \oritone@loadrecursivepdf{localmap,tabular,sans=linear,nomono}%
-      }{%
-        \oritone@fontwarning{recursive.sty}{PTSans}%
-        \oritone@usepdfsansfallback
-        \oritone@usepdfmonofallback
-      }%
+      \def\oritone@recursivepdfopts{localmap,tabular,sans=linear,nomono}%
     \fi
   \else
     \iforitone@recursivemono
-      \IfFileExists{recursive.sty}{%
-        \oritone@usepdfsansfallback
-        \oritone@loadrecursivepdf{localmap,tabular,nosans,mono=linear}%
-      }{%
-        \oritone@fontwarning{recursive.sty}{Inconsolata}%
-        \oritone@usepdfsansfallback
-        \oritone@usepdfmonofallback
-      }%
+      \def\oritone@recursivepdfopts{localmap,tabular,nosans,mono=linear}%
     \else
-      \oritone@usepdfsansfallback
-      \oritone@usepdfmonofallback
+      \let\oritone@recursivepdfopts\relax
     \fi
+  \fi
+  \ifx\oritone@recursivepdfopts\relax\else
+    \IfFileExists{recursive.sty}{%
+      \expandafter\oritone@loadrecursivepdf\expandafter{\oritone@recursivepdfopts}%
+    }{%
+      % recursive.sty missing: clear the Recursive requests so the role code
+      % below installs the Type 1 fallbacks and warns once per affected role.
+      \iforitone@recursivesans
+        \oritone@fontwarning{recursive.sty}{PTSans}%
+        \oritone@recursivesansfalse
+      \fi
+      \iforitone@recursivemono
+        \oritone@fontwarning{recursive.sty}{Inconsolata}%
+        \oritone@recursivemonofalse
+      \fi
+    }%
+  \fi
+  % Sans role: Roboto Condensed via the roboto package, Recursive via the load
+  % above, or PTSans as the universal Type 1 fallback.
+  \iforitone@robotosans
+    \IfFileExists{roboto.sty}{%
+      \oritone@usepdfrobotosans
+    }{%
+      \oritone@fontwarning{roboto.sty}{PTSans}%
+      \oritone@usepdfsansfallback
+    }%
+  \else
+    \iforitone@recursivesans\else
+      \oritone@usepdfsansfallback
+    \fi
+  \fi
+  % Mono role: Recursive via the load above, or Inconsolata otherwise.
+  \iforitone@recursivemono\else
+    \oritone@usepdfmonofallback
   \fi
   \renewcommand*\rmdefault{stix2}
 \else
@@ -223,16 +295,23 @@
 
   \oritone@fontselectedfalse
   \edef\oritone@requestedfont{\oritonefonts@sans}%
-  \ifx\oritone@requestedfont\oritone@recursive@sans
-    \oritone@trysetsansfont{Recursive Sans Linear Static}%
-    \oritone@trysetsansfont{Recursive Sn Lnr St}%
-    \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.otf}%
-    \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.ttf}%
-    \oritone@trysetsansfont{Recursive Sans Casual Static}%
-    \oritone@trysetsansfont{Recursive Sn Csl St}%
+  \ifx\oritone@requestedfont\oritone@roboto@sans
+    \oritone@trysetsansfont{Roboto Condensed}%
+    \oritone@trysetsansfontfiles{RobotoCondensed}{.otf}%
+    \oritone@trysetsansfontfiles{RobotoCondensed}{.ttf}%
     \oritone@trysetsansfont{\oritonefonts@sans}%
   \else
-    \oritone@trysetsansfont{\oritonefonts@sans}%
+    \ifx\oritone@requestedfont\oritone@recursive@sans
+      \oritone@trysetsansfont{Recursive Sans Linear Static}%
+      \oritone@trysetsansfont{Recursive Sn Lnr St}%
+      \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.otf}%
+      \oritone@trysetsansfontfiles{RecursiveSansLnrSt}{.ttf}%
+      \oritone@trysetsansfont{Recursive Sans Casual Static}%
+      \oritone@trysetsansfont{Recursive Sn Csl St}%
+      \oritone@trysetsansfont{\oritonefonts@sans}%
+    \else
+      \oritone@trysetsansfont{\oritonefonts@sans}%
+    \fi
   \fi
   \iforitone@fontselected\else
     \IfFontExistsTF{PTSans-Regular-tlf-t1.tfm}{%

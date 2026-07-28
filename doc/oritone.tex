@@ -110,6 +110,12 @@ Selects the active foreground, background, surface, and semantic color roles. \\
 \opt{vermillion}, \opt{rose}, \opt{purple}, \opt{red}, \opt{amber},
 \opt{cyan} &
 Selects the accent hue used for links, rules, headings, and progress bars. \\
+\opt{accentshade} &
+\opt{normal}, \opt{dark}, \opt{darker}, \opt{light}, \opt{lighter} &
+Shades the whole accent family toward the foreground text (\opt{dark}/\opt{darker})
+or the page background (\opt{light}/\opt{lighter}) so links, rules, headings, the
+footer bar, and progress bars shift together. Useful when the default accent
+looks too bright on the light and white modes. \\
 \opt{listings} or \opt{julia} & Boolean &
 Loads \pkg{listings} and enables the shared Oritone listing styles. \\
 \opt{plots} or \opt{pgfplots} & Boolean &
@@ -123,6 +129,7 @@ The active mode and accent can also be changed after package load:
 
 \begin{lstlisting}[language={[LaTeX]TeX}]
 \oritonesetup{mode=dark,accent=amber}
+\oritonesetup{mode=white,accent=blue,accentshade=dark}
 \end{lstlisting}
 
 \section{Fonts}
@@ -140,7 +147,7 @@ Role & Default & Used for \\
 Serif & STIX Two Text & Body text in manuscript and thesis documents. \\
 Math & STIX Two Math & Math in unicode engines; pdfLaTeX uses the STIX2
 package. \\
-Sans & Recursive Sans & CV body text, headings, title pages, headers, footers,
+Sans & Roboto Condensed & CV body text, headings, title pages, headers, footers,
 Beamer text, labels, and other display roles. \\
 Mono & Recursive Mono & Listings, verbatim-like text, and code-oriented helper
 macros. \\
@@ -149,14 +156,14 @@ macros. \\
 \end{center}
 
 LuaLaTeX and XeLaTeX use \pkg{fontspec} and \pkg{unicode-math}. They first try
-installed Recursive and STIX names, then known static font file names, then
-fallback families.
+installed Roboto, Recursive, and STIX names, then known static font file names,
+then fallback families.
 
-pdfLaTeX cannot load OpenType system fonts directly. For Recursive Sans and
-Recursive Mono it uses the optional external \pkg{recursive} package when
-\filename{recursive.sty} is installed. If that package is missing, Oritone
-warns and falls back to PT Sans and Inconsolata so the document remains
-compileable.
+pdfLaTeX cannot load OpenType system fonts directly. For Roboto Condensed it
+uses the \pkg{roboto} package, and for Recursive Mono the optional external
+\pkg{recursive} package when \filename{recursive.sty} is installed. If a support
+package is missing, Oritone warns and falls back to PT Sans and Inconsolata so
+the document remains compileable.
 
 \begin{lstlisting}
 git clone git@github.com:schmaeke/latex-recursive.git
@@ -392,9 +399,9 @@ Use the theme with a regular Beamer document:
 \subsection{Beamer Options}
 
 The theme accepts \opt{light}, \opt{dark}, \opt{white}, \opt{black}, or
-\opt{mode=...}; \opt{accent=...}; the accent shortcut options; and
-\opt{draftlogos} or \opt{showlogoplaceholders}. Missing logo placeholders are
-silent unless a placeholder option is enabled.
+\opt{mode=...}; \opt{accent=...}; \opt{accentshade=...}; the accent shortcut
+options; and \opt{draftlogos} or \opt{showlogoplaceholders}. Missing logo
+placeholders are silent unless a placeholder option is enabled.
 
 \subsection{Beamer Commands}
 
@@ -439,6 +446,12 @@ the same behavior with:
 \usepackage[plots]{oritone}
 \oritonepgfplotssetup
 \end{lstlisting}
+
+The plot cycle follows the Okabe-Ito colorblind-safe palette, mapped to the
+closest Oritone hues and ordered blue, vermillion, green, purple, sky, orange,
+yellow, and gray. The colors are available individually as \opt{plotblue},
+\opt{plotvermillion}, \opt{plotgreen}, \opt{plotpurple}, \opt{plotsky},
+\opt{plotorange}, \opt{plotyellow}, and \opt{plotgray}.
 
 \section{Examples and Tests}
 
